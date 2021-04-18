@@ -9,13 +9,17 @@ import (
 
 type waveform struct {
 	fn  func(float64) float64
-	buf *sample.Buffer
+	buf sample.Buffer
 }
 
 func (w *waveform) BlockSize() int { return 0 }
 
 func (w *waveform) Write(vs []sample.Sample) (n int, err error) {
 	return w.buf.Write(vs)
+}
+
+func (w *waveform) ReadFrom(r sample.Reader) (n int64, err error) {
+	return w.buf.ReadFrom(r)
 }
 
 func (w *waveform) Read(vs []sample.Sample) (n int, err error) {

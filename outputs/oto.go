@@ -1,10 +1,8 @@
 package outputs
 
 import (
-	"bytes"
 	"encoding/binary"
 	"fmt"
-	"io"
 
 	"github.com/ajzaff/go-sample"
 	"github.com/hajimehoshi/oto"
@@ -33,14 +31,11 @@ type otoContext struct {
 }
 
 func (o *otoContext) Write(vs []sample.Sample) (n int, err error) {
-	var buf bytes.Buffer
-	buf.Grow(4 * len(vs))
 	for _, s := range vs {
-		binary.Write(&buf, binary.LittleEndian, convert(s.Left()))
-		binary.Write(&buf, binary.LittleEndian, convert(s.Right()))
+		binary.Write(o.player, binary.LittleEndian, convert(s.Left()))
+		binary.Write(o.player, binary.LittleEndian, convert(s.Right()))
 	}
-	written, err := io.Copy(o.player, &buf)
-	return int(written), err
+	return len(vs), nil
 }
 
 func convert(x float64) int16 {

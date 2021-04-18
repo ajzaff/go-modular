@@ -61,7 +61,7 @@ type WriterTo interface {
 	WriteTo(w Writer) (n int64, err error)
 }
 
-// Processor is an interface for signal processors.
+// Processor is an interface for block sample processors.
 type Processor interface {
 	Reader
 	Writer
