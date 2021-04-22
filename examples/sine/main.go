@@ -18,7 +18,7 @@ func main() {
 
 	go func() {
 		quit := make(chan struct{})
-		go ctx.Send(0, osc.Sine(ctx, control.Voltage(ctx, .3), control.Voltage(ctx, 0), quit))
+		go modular.Send(ctx, 0, osc.Sine(ctx, control.Voltage(ctx, .3), control.Voltage(ctx, 0), quit))
 		time.Sleep(5 * time.Second)
 		quit <- struct{}{}
 		wg.Done()
@@ -27,7 +27,7 @@ func main() {
 	go func() {
 		time.Sleep(time.Second)
 		quit := make(chan struct{})
-		go ctx.Send(1, osc.Sine(ctx, control.Voltage(ctx, .3), control.Voltage(ctx, 219.3), quit))
+		go modular.Send(ctx, 1, osc.Sine(ctx, control.Voltage(ctx, .3), control.Voltage(ctx, 219.3), quit))
 		time.Sleep(4 * time.Second)
 		quit <- struct{}{}
 		wg.Done()
@@ -36,7 +36,7 @@ func main() {
 	go func() {
 		time.Sleep(2 * time.Second)
 		quit := make(chan struct{})
-		go ctx.Send(0, osc.Sine(ctx, control.Voltage(ctx, .3), control.Voltage(ctx, 344), quit))
+		go modular.Send(ctx, 0, osc.Sine(ctx, control.Voltage(ctx, .3), control.Voltage(ctx, 344), quit))
 		time.Sleep(3 * time.Second)
 		quit <- struct{}{}
 		wg.Done()
@@ -45,7 +45,7 @@ func main() {
 	go func() {
 		time.Sleep(3 * time.Second)
 		quit := make(chan struct{})
-		go ctx.Send(0, osc.Sine(ctx, control.Voltage(ctx, .3), control.Voltage(ctx, 547.77), quit))
+		go modular.Send(ctx, 0, osc.Sine(ctx, control.Voltage(ctx, .3), control.Voltage(ctx, 547.77), quit))
 		time.Sleep(2 * time.Second)
 		quit <- struct{}{}
 		wg.Done()

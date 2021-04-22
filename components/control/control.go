@@ -1,6 +1,10 @@
 package control
 
-import "github.com/ajzaff/go-modular"
+import (
+	"context"
+
+	"github.com/ajzaff/go-modular"
+)
 
 // V is a control voltage constant.
 //
@@ -13,13 +17,13 @@ func (v *V) Store(val float64) { *v = V(val) }
 // Voltage returns a constant voltage source from v.
 //
 // Same as calling Func with a constant yielding fn.
-func Voltage(ctx *modular.Context, cv V) <-chan V {
+func Voltage(ctx context.Context, cv V) <-chan V {
 	return Func(ctx, func() V { return cv })
 }
 
 // Func returns a variable voltage source from evaluating fn.
-func Func(ctx *modular.Context, fn func() V) <-chan V {
-	ch := make(chan V, ctx.BufferSize)
+func Func(ctx context.Context, fn func() V) <-chan V {
+	ch := make(chan V, modular.BufferSize(ctx))
 	go func() {
 		for {
 			ch <- fn()

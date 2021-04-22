@@ -13,8 +13,8 @@ func main() {
 	ctx := modular.NewContext(otodriver.New())
 
 	i := 0
-	ctx.Send(0, osc.Sine(ctx, control.Func(ctx, func() control.V {
-		if i++; (i/ctx.SampleRate)%2 == 0 {
+	modular.Send(ctx, 0, osc.Sine(ctx, control.Func(ctx, func() control.V {
+		if i++; (i/modular.SampleRate(ctx))%2 == 0 {
 			return 1
 		}
 		return 0

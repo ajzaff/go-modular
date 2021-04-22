@@ -1,7 +1,11 @@
 package control
 
-import "github.com/ajzaff/go-modular"
+import (
+	"context"
 
-func Clock(ctx *modular.Context, hz <-chan modular.V) <-chan modular.V {
+	"github.com/ajzaff/go-modular"
+)
+
+func Clock(ctx context.Context, hz <-chan modular.V) <-chan modular.V {
 	return nil
 }

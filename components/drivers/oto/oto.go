@@ -1,6 +1,7 @@
 package otodriver
 
 import (
+	"context"
 	"encoding/binary"
 	"errors"
 
@@ -11,7 +12,7 @@ import (
 )
 
 type driver struct {
-	ctx *modular.Context
+	ctx context.Context
 	*oto.Context
 }
 
@@ -25,8 +26,8 @@ func New() modular.Driver {
 // Init initializes a new Oto driver.
 //
 // Init should only be called once.
-func (d *driver) Init(ctx *modular.Context) {
-	oto, err := oto.NewContext(ctx.SampleRate, 2, 2, ctx.BufferSize)
+func (d *driver) Init(ctx context.Context) {
+	oto, err := oto.NewContext(modular.SampleRate(ctx), 2, 2, modular.BufferSize(ctx))
 	if err != nil {
 		panic(err)
 	}

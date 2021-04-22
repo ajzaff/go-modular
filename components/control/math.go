@@ -1,13 +1,14 @@
 package control
 
 import (
+	"context"
 	"math"
 
 	"github.com/ajzaff/go-modular"
 )
 
-func Mul(ctx *modular.Context, a, b <-chan V, quit <-chan struct{}) <-chan V {
-	ch := make(chan V, ctx.BufferSize)
+func Mul(ctx context.Context, a, b <-chan V, quit <-chan struct{}) <-chan V {
+	ch := make(chan V, modular.BufferSize(ctx))
 	go func() {
 	loop:
 		for {
@@ -23,8 +24,8 @@ func Mul(ctx *modular.Context, a, b <-chan V, quit <-chan struct{}) <-chan V {
 	return ch
 }
 
-func Sine(ctx *modular.Context, vs <-chan V) <-chan V {
-	ch := make(chan V, ctx.BufferSize)
+func Sine(ctx context.Context, vs <-chan V) <-chan V {
+	ch := make(chan V, modular.BufferSize(ctx))
 	go func() {
 		for v := range vs {
 			ch <- V(math.Sin(2 * math.Pi * float64(v)))
@@ -34,8 +35,8 @@ func Sine(ctx *modular.Context, vs <-chan V) <-chan V {
 	return ch
 }
 
-func Sawtooth(ctx *modular.Context, vs <-chan V) <-chan V {
-	ch := make(chan V, ctx.BufferSize)
+func Sawtooth(ctx context.Context, vs <-chan V) <-chan V {
+	ch := make(chan V, modular.BufferSize(ctx))
 	go func() {
 		for v := range vs {
 			ch <- V(2 / math.Pi * math.Atan(math.Tan(math.Pi*float64(v))))
@@ -45,8 +46,8 @@ func Sawtooth(ctx *modular.Context, vs <-chan V) <-chan V {
 	return ch
 }
 
-func Triangle(ctx *modular.Context, vs <-chan V) <-chan V {
-	ch := make(chan V, ctx.BufferSize)
+func Triangle(ctx context.Context, vs <-chan V) <-chan V {
+	ch := make(chan V, modular.BufferSize(ctx))
 	go func() {
 		for v := range vs {
 			ch <- V(2 / math.Pi * math.Asin(math.Sin(2*math.Pi*float64(v))))
@@ -56,8 +57,8 @@ func Triangle(ctx *modular.Context, vs <-chan V) <-chan V {
 	return ch
 }
 
-func Sinc(ctx *modular.Context, vs <-chan V) <-chan V {
-	ch := make(chan V, ctx.BufferSize)
+func Sinc(ctx context.Context, vs <-chan V) <-chan V {
+	ch := make(chan V, modular.BufferSize(ctx))
 	go func() {
 		for v := range vs {
 			ch <- V(math.Sin(math.Pi*float64(v)) / (math.Pi * float64(v)))

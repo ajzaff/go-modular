@@ -1,14 +1,16 @@
 package osc
 
 import (
+	"context"
+
 	"github.com/ajzaff/go-modular"
 	"github.com/ajzaff/go-modular/components/control"
 )
 
 const mid = 440
 
-func audio(ctx *modular.Context, cin <-chan control.V) <-chan modular.V {
-	ch := make(chan modular.V, ctx.BufferSize)
+func audio(ctx context.Context, cin <-chan control.V) <-chan modular.V {
+	ch := make(chan modular.V, modular.BufferSize(ctx))
 	go func() {
 		for v := range cin {
 			ch <- modular.V(v)
@@ -18,28 +20,28 @@ func audio(ctx *modular.Context, cin <-chan control.V) <-chan modular.V {
 	return ch
 }
 
-func Sine(ctx *modular.Context, a <-chan control.V, freq <-chan control.V, quit <-chan struct{}) <-chan modular.V {
+func Sine(ctx context.Context, a <-chan control.V, freq <-chan control.V, quit <-chan struct{}) <-chan modular.V {
 	var i uint64
 	return audio(ctx, control.Mul(ctx, a, control.Sine(ctx, control.Func(ctx, func() (v control.V) {
-		v.Store(float64(mid+<-freq) * float64(i) / float64(ctx.SampleRate))
+		v.Store(float64(mid+<-freq) * float64(i) / float64(modular.SampleRate(ctx)))
 		i++
 		return
 	})), quit))
 }
 
-func Sawtooth(ctx *modular.Context, freq <-chan control.V) <-chan modular.V {
+func Sawtooth(ctx context.Context, freq <-chan control.V) <-chan modular.V {
 	var i uint64
 	return audio(ctx, control.Sawtooth(ctx, control.Func(ctx, func() (v control.V) {
-		v.Store(float64(mid+<-freq) * float64(i) / float64(ctx.SampleRate))
+		v.Store(float64(mid+<-freq) * float64(i) / float64(modular.SampleRate(ctx)))
 		i++
 		return
 	})))
 }
 
-func Triangle(ctx *modular.Context, freq <-chan control.V) <-chan modular.V {
+func Triangle(ctx context.Context, freq <-chan control.V) <-chan modular.V {
 	var i uint64
 	return audio(ctx, control.Triangle(ctx, control.Func(ctx, func() (v control.V) {
-		v.Store(float64(mid+<-freq) * float64(i) / float64(ctx.SampleRate))
+		v.Store(float64(mid+<-freq) * float64(i) / float64(modular.SampleRate(ctx)))
 		i++
 		return
 	})))

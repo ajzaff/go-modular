@@ -1,26 +1,27 @@
 package sampleio
 
 import (
+	"context"
 	"errors"
 	"io"
 
 	"github.com/ajzaff/go-modular"
 )
 
-func Copy(ctx *modular.Context, dst Writer, src Reader) (n int64, err error) {
+func Copy(ctx context.Context, dst Writer, src Reader) (n int64, err error) {
 	return CopyBuffer(ctx, dst, src, nil)
 }
 
 // CopyBuffer values from src to dst using buf until an error is reached.
 // Returns the number of bytes copied and the error returned.
-func CopyBuffer(ctx *modular.Context, dst Writer, src Reader, buf []modular.V) (written int64, err error) {
+func CopyBuffer(ctx context.Context, dst Writer, src Reader, buf []modular.V) (written int64, err error) {
 	if buf != nil && len(buf) == 0 {
 		panic("sample.CopyBuffer: empty buffer")
 	}
 	return copyBuffer(ctx, dst, src, buf)
 }
 
-func copyBuffer(ctx *modular.Context, dst Writer, src Reader, buf []modular.V) (written int64, err error) {
+func copyBuffer(ctx context.Context, dst Writer, src Reader, buf []modular.V) (written int64, err error) {
 	if wt, ok := src.(WriterTo); ok {
 		return wt.WriteTo(dst)
 	}
@@ -35,7 +36,7 @@ func copyBuffer(ctx *modular.Context, dst Writer, src Reader, buf []modular.V) (
 		if size == 0 {
 			if dp, ok := dst.(Processor); ok {
 				size = dp.BlockSize()
-			} else if v := ctx.BufferSize; v > 0 {
+			} else if v := modular.BufferSize(ctx); v > 0 {
 				size = v
 			} else {
 				size = 32 * 1024 // io.Copy default
