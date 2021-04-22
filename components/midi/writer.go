@@ -4,7 +4,8 @@ import (
 	"fmt"
 	"math"
 
-	"github.com/ajzaff/go-sample"
+	"github.com/ajzaff/go-modular"
+	"github.com/ajzaff/go-modular/sampleio"
 	"gitlab.com/gomidi/midi"
 	"gitlab.com/gomidi/midi/midimessage/channel"
 	"gitlab.com/gomidi/midi/midimessage/realtime"
@@ -12,7 +13,7 @@ import (
 	"gitlab.com/gomidi/portmididrv"
 )
 
-func MidiWriter(driver midi.Writer) sample.Writer {
+func MidiWriter(driver midi.Writer) sampleio.Writer {
 	return &midiWriter{driver}
 }
 
@@ -40,10 +41,9 @@ type midiWriter struct {
 	driver midi.Writer
 }
 
-func (w *midiWriter) Write(vs []sample.Sample) (n int, err error) {
+func (w *midiWriter) Write(vs []modular.V) (n int, err error) {
 	for _, v := range vs {
-		writeOne(w.driver, real(v))
-		writeOne(w.driver, imag(v))
+		writeOne(w.driver, float64(v))
 	}
 	return n, nil
 }

@@ -1,6 +1,6 @@
-# go-sample
+# go-modular
 
-Sampling and synthesizer library in Go.
+A software modular synthesizer with Midi support.
 
 **!! Warning: High amplitude sounds can cause serious ear damage. Lower your headphone volume before using !!**
 
@@ -9,7 +9,7 @@ Sampling and synthesizer library in Go.
 See required setup in [oto](https://github.com/hajimehoshi/oto/blob/master/README.md#prerequisite) for all platforms. This library is used to play PCM sound.
 
 ```
-go get github.com/ajzaff/go-synth
+go get github.com/ajzaff/go-modular
 ```
 
 ### Midi

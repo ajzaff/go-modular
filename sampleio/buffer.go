@@ -1,16 +1,18 @@
-package sample
+package sampleio
 
 import (
 	"errors"
 	"io"
+
+	"github.com/ajzaff/go-modular"
 )
 
 type Buffer struct {
-	buf []Sample
+	buf []modular.V
 	off int
 }
 
-func NewBuffer(buf []Sample) *Buffer {
+func NewBuffer(buf []modular.V) *Buffer {
 	return &Buffer{buf: buf}
 }
 
@@ -19,7 +21,7 @@ var errNegativeRead = errors.New("sample.Buffer: reader returned negative count 
 
 const maxInt = int(^uint(0) >> 1)
 
-func (b *Buffer) Samples() []Sample { return b.buf[b.off:] }
+func (b *Buffer) Samples() []modular.V { return b.buf[b.off:] }
 
 func (b *Buffer) empty() bool { return len(b.buf) <= b.off }
 
@@ -64,7 +66,7 @@ func (b *Buffer) grow(n int) int {
 		return i
 	}
 	if b.buf == nil && n <= smallBufferSize {
-		b.buf = make([]Sample, n, smallBufferSize)
+		b.buf = make([]modular.V, n, smallBufferSize)
 		return 0
 	}
 	c := cap(b.buf)
@@ -96,7 +98,7 @@ func (b *Buffer) Grow(n int) {
 	b.buf = b.buf[:m]
 }
 
-func (b *Buffer) Write(p []Sample) (n int, err error) {
+func (b *Buffer) Write(p []modular.V) (n int, err error) {
 	m, ok := b.tryGrowByReslice(len(p))
 	if !ok {
 		m = b.grow(len(p))
@@ -126,14 +128,14 @@ func (b *Buffer) ReadFrom(r Reader) (n int64, err error) {
 	}
 }
 
-func makeSlice(n int) []Sample {
+func makeSlice(n int) []modular.V {
 	// If the make fails, give a known error.
 	defer func() {
 		if recover() != nil {
 			panic(errTooLarge)
 		}
 	}()
-	return make([]Sample, n)
+	return make([]modular.V, n)
 }
 
 func (b *Buffer) WriteTo(w Writer) (n int64, err error) {
@@ -158,7 +160,7 @@ func (b *Buffer) WriteTo(w Writer) (n int64, err error) {
 	return n, nil
 }
 
-func (b *Buffer) WriteSample(c Sample) error {
+func (b *Buffer) WriteSample(c modular.V) error {
 	m, ok := b.tryGrowByReslice(1)
 	if !ok {
 		m = b.grow(1)
@@ -167,7 +169,7 @@ func (b *Buffer) WriteSample(c Sample) error {
 	return nil
 }
 
-func (b *Buffer) Read(p []Sample) (n int, err error) {
+func (b *Buffer) Read(p []modular.V) (n int, err error) {
 	if b.empty() {
 		// Buffer is empty, reset to recover space.
 		b.Reset()
@@ -181,7 +183,7 @@ func (b *Buffer) Read(p []Sample) (n int, err error) {
 	return n, nil
 }
 
-func (b *Buffer) Next(n int) []Sample {
+func (b *Buffer) Next(n int) []modular.V {
 	m := b.Len()
 	if n > m {
 		n = m
@@ -191,7 +193,7 @@ func (b *Buffer) Next(n int) []Sample {
 	return data
 }
 
-func (b *Buffer) ReadSample() (Sample, error) {
+func (b *Buffer) ReadSample() (modular.V, error) {
 	if b.empty() {
 		// Buffer is empty, reset to recover space.
 		b.Reset()

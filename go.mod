@@ -1,4 +1,4 @@
-module github.com/ajzaff/go-sample
+module github.com/ajzaff/go-modular
 
 go 1.15
 

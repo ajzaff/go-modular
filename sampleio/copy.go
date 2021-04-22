@@ -1,55 +1,26 @@
-package sample
+package sampleio
 
 import (
 	"errors"
 	"io"
+
+	"github.com/ajzaff/go-modular"
 )
 
-func Equal(a, b []Sample) bool {
-	if len(a) != len(b) {
-		return false
-	}
-	for i := range a {
-		if a[i] != b[i] {
-			return false
-		}
-	}
-	return true
-}
-
-func Repeat(a []Sample, count int) []Sample {
-	if count == 0 {
-		return []Sample{}
-	}
-	if count < 0 {
-		panic("samples: negative Repeat count")
-	} else if len(a)*count/count != len(a) {
-		panic("samples: Repeat count causes overflow")
-	}
-
-	buf := make([]Sample, len(a)*count)
-	bp := copy(buf, a)
-	for bp < len(buf) {
-		copy(buf[bp:], buf[:bp])
-		bp *= 2
-	}
-	return buf
-}
-
-func Copy(dst Writer, src Reader) (n int64, err error) {
-	return CopyBuffer(dst, src, nil)
+func Copy(ctx *modular.Context, dst Writer, src Reader) (n int64, err error) {
+	return CopyBuffer(ctx, dst, src, nil)
 }
 
 // CopyBuffer values from src to dst using buf until an error is reached.
 // Returns the number of bytes copied and the error returned.
-func CopyBuffer(dst Writer, src Reader, buf []Sample) (written int64, err error) {
+func CopyBuffer(ctx *modular.Context, dst Writer, src Reader, buf []modular.V) (written int64, err error) {
 	if buf != nil && len(buf) == 0 {
 		panic("sample.CopyBuffer: empty buffer")
 	}
-	return copyBuffer(dst, src, buf)
+	return copyBuffer(ctx, dst, src, buf)
 }
 
-func copyBuffer(dst Writer, src Reader, buf []Sample) (written int64, err error) {
+func copyBuffer(ctx *modular.Context, dst Writer, src Reader, buf []modular.V) (written int64, err error) {
 	if wt, ok := src.(WriterTo); ok {
 		return wt.WriteTo(dst)
 	}
@@ -64,11 +35,14 @@ func copyBuffer(dst Writer, src Reader, buf []Sample) (written int64, err error)
 		if size == 0 {
 			if dp, ok := dst.(Processor); ok {
 				size = dp.BlockSize()
+			} else if v := ctx.BufferSize; v > 0 {
+				size = v
+			} else {
+				size = 32 * 1024 // io.Copy default
 			}
-			size = 32 * 1024 // io.Copy default
 		}
 		// TODO: add support for limit reader?
-		buf = make([]Sample, size)
+		buf = make([]modular.V, size)
 	}
 	for {
 		nr, er := src.Read(buf)
