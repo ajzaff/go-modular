@@ -23,7 +23,7 @@ var (
 	driverKey     int
 )
 
-// Driver is an interface for synth drivers.
+// Driver is an interface for raw audio output drivers.
 //
 // The driver is usable after a call to Init.
 // Send sends the entirety of the input voltage

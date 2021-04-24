@@ -18,7 +18,8 @@ type driver struct {
 
 // New initializes a new Oto driver.
 //
-// New should only be called once.
+// Init should only be called once ever, so
+// the driver should probably be singleton.
 func New() modular.Driver {
 	return &driver{}
 }
