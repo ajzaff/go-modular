@@ -6,24 +6,21 @@ import (
 	"github.com/ajzaff/go-modular"
 )
 
-// V is a control voltage constant.
+// CV is a control voltage.
 //
-// The alias can be used to differentiate where a V is expected.
-type V modular.V
+// The alias can be used to differentiate between audio and control voltages.
+type CV <-chan modular.V
 
-// Store the float val into v.
-func (v *V) Store(val float64) { *v = V(val) }
-
-// Voltage returns a constant voltage source from v.
+// Voltage returns a CV from a singluar value v.
 //
-// Same as calling Func with a constant yielding fn.
-func Voltage(ctx context.Context, cv V) <-chan V {
-	return Func(ctx, func() V { return cv })
+// Equivalent to calling Func with a constant-yielding func.
+func Voltage(ctx context.Context, v float64) CV {
+	return Func(ctx, func() modular.V { return modular.V(v) })
 }
 
 // Func returns a variable voltage source from evaluating fn.
-func Func(ctx context.Context, fn func() V) <-chan V {
-	ch := make(chan V, modular.BufferSize(ctx))
+func Func(ctx context.Context, fn func() modular.V) CV {
+	ch := make(chan modular.V, modular.BufferSize(ctx))
 	go func() {
 		for {
 			ch <- fn()

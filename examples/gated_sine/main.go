@@ -1,22 +1,37 @@
 package main
 
 import (
+	"context"
+
 	"github.com/ajzaff/go-modular"
 	"github.com/ajzaff/go-modular/components/control"
 	otodriver "github.com/ajzaff/go-modular/components/drivers/oto"
-	osc "github.com/ajzaff/go-modular/components/oscillator"
+	"github.com/ajzaff/go-modular/components/midi"
+	osc "github.com/ajzaff/go-modular/modules/oscillator"
 )
 
 const freq = 440
 
 func main() {
-	ctx := modular.NewContext(otodriver.New())
+	ctx := modular.New(
+		modular.WithSampleRate(
+			context.Background(), 96000), otodriver.New())
 
-	i := 0
-	modular.Send(ctx, 0, osc.Sine(ctx, control.Func(ctx, func() control.V {
-		if i++; (i/modular.SampleRate(ctx))%2 == 0 {
-			return 1
-		}
-		return 0
-	}), control.Voltage(ctx, freq) /* quit = */, make(chan struct{})))
+	modular.Send(ctx, 0, func() <-chan modular.V {
+		ch := make(chan modular.V, modular.BufferSize(ctx))
+		go func() {
+			gate := osc.Square(ctx, 1, osc.RangeLo, 0, control.Voltage(ctx, 0))
+			for v := range osc.Saw(ctx,
+				1, osc.Range32, osc.Fine(midi.StdTuning),
+				control.Voltage(ctx, float64(midi.Key(midi.StdTuning, freq)))) {
+				if <-gate != 0 {
+					ch <- v
+				} else {
+					ch <- 0
+				}
+			}
+		}()
+		return ch
+	}())
+
 }

@@ -49,11 +49,11 @@ func Fine(t midi.Tuning) float64 {
 // Sine outputs an sine audio wave from the linear signal and parameters.
 //
 // Linear signal lin conforms to the real midi scale (one volt per octave).
-func Sine(ctx context.Context, a Polarity, r Range, fine control.V, lin <-chan control.V) <-chan modular.V {
+func Sine(ctx context.Context, a Polarity, r Range, fine float64, lin control.CV) <-chan modular.V {
 	i := 0
 	sampleRate := modular.SampleRate(ctx)
 	return osc(ctx, a, func() (v modular.V) {
-		length := float64(sampleRate) / Tone(r, float64(fine+<-lin))
+		length := float64(sampleRate) / Tone(r, fine+float64(<-lin))
 		v.Store(math.Sin(2 * math.Pi * float64(i) / length))
 		i++
 		return
@@ -63,11 +63,11 @@ func Sine(ctx context.Context, a Polarity, r Range, fine control.V, lin <-chan c
 // Triangle outputs an triangle wave from the linear signal and parameters.
 //
 // Linear signal lin conforms to the real midi scale (one volt per octave).
-func Triangle(ctx context.Context, a Polarity, r Range, fine control.V, lin <-chan control.V) <-chan modular.V {
+func Triangle(ctx context.Context, a Polarity, r Range, fine float64, lin control.CV) <-chan modular.V {
 	i := 0
 	sampleRate := modular.SampleRate(ctx)
 	return osc(ctx, a, func() (v modular.V) {
-		length := float64(sampleRate) / Tone(r, float64(fine+<-lin))
+		length := float64(sampleRate) / Tone(r, fine+float64(<-lin))
 		v.Store(2 / math.Pi * math.Asin(math.Sin(2*math.Pi*float64(i)/length)))
 		i++
 		return
@@ -77,11 +77,11 @@ func Triangle(ctx context.Context, a Polarity, r Range, fine control.V, lin <-ch
 // Saw outputs an sawtooth wave from the linear signal and parameters.
 //
 // Linear signal lin conforms to the real midi scale (one volt per octave).
-func Saw(ctx context.Context, a Polarity, r Range, fine control.V, lin <-chan control.V) <-chan modular.V {
+func Saw(ctx context.Context, a Polarity, r Range, fine float64, lin control.CV) <-chan modular.V {
 	i := 0
 	sampleRate := modular.SampleRate(ctx)
 	return osc(ctx, a, func() (v modular.V) {
-		length := float64(sampleRate) / Tone(r, float64(fine+<-lin))
+		length := float64(sampleRate) / Tone(r, fine+float64(<-lin))
 		v.Store(2 / math.Pi * math.Atan(math.Tan(math.Pi*float64(i)/length)))
 		i++
 		return
@@ -91,7 +91,7 @@ func Saw(ctx context.Context, a Polarity, r Range, fine control.V, lin <-chan co
 // Square outputs an square wave from the linear signal and parameters.
 //
 // Linear signal lin conforms to the real midi scale (one volt per octave).
-func Square(ctx context.Context, a Polarity, r Range, fine control.V, lin <-chan control.V) <-chan modular.V {
+func Square(ctx context.Context, a Polarity, r Range, fine float64, lin control.CV) <-chan modular.V {
 	return Pulse(ctx, a, r, fine, control.Voltage(ctx, .5), lin)
 }
 
@@ -99,11 +99,11 @@ func Square(ctx context.Context, a Polarity, r Range, fine control.V, lin <-chan
 //
 // Linear signal lin conforms to the real midi scale (one volt per octave).
 // Pulse width w are in the range 0 to 1.
-func Pulse(ctx context.Context, a Polarity, r Range, fine control.V, w, lin <-chan control.V) <-chan modular.V {
+func Pulse(ctx context.Context, a Polarity, r Range, fine float64, w, lin control.CV) <-chan modular.V {
 	i := 0
 	sampleRate := modular.SampleRate(ctx)
 	return osc(ctx, a, func() (v modular.V) {
-		length := float64(sampleRate) / Tone(r, float64(fine+<-lin))
+		length := float64(sampleRate) / Tone(r, fine+float64(<-lin))
 		if math.Mod(float64(i)/length, 2) < 2*float64(<-w) {
 			v.Store(1)
 		} else {

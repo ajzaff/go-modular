@@ -20,8 +20,8 @@ func main() {
 
 	go func() {
 		go modular.Send(ctx, 0, osc.Sine(ctx, .2,
-			osc.Range8, control.V(osc.Fine(midi.StdTuning)),
-			control.Voltage(ctx, control.V(midi.Note(midi.A, 4)))))
+			osc.Range8, osc.Fine(midi.StdTuning),
+			control.Voltage(ctx, float64(midi.Note(midi.A, 4)))))
 		time.Sleep(5 * time.Second)
 		wg.Done()
 	}()
@@ -29,8 +29,8 @@ func main() {
 	go func() {
 		time.Sleep(time.Second)
 		go modular.Send(ctx, 1, osc.Sine(ctx, .2,
-			osc.Range8, control.V(osc.Fine(midi.StdTuning)),
-			control.Voltage(ctx, control.V(midi.Note(midi.C, 5)))))
+			osc.Range8, osc.Fine(midi.StdTuning),
+			control.Voltage(ctx, float64(midi.Note(midi.C, 5)))))
 		time.Sleep(4 * time.Second)
 		wg.Done()
 	}()
@@ -38,8 +38,8 @@ func main() {
 	go func() {
 		time.Sleep(2 * time.Second)
 		go modular.Send(ctx, 0, osc.Sine(ctx, .2,
-			osc.Range8, control.V(osc.Fine(midi.StdTuning)),
-			control.Voltage(ctx, control.V(midi.Note(midi.E, 5)))))
+			osc.Range8, osc.Fine(midi.StdTuning),
+			control.Voltage(ctx, float64(midi.Note(midi.E, 5)))))
 		time.Sleep(3 * time.Second)
 		wg.Done()
 	}()
@@ -47,8 +47,8 @@ func main() {
 	go func() {
 		time.Sleep(3 * time.Second)
 		go modular.Send(ctx, 1, osc.Sine(ctx, .2,
-			osc.Range8, control.V(osc.Fine(midi.StdTuning)),
-			control.Voltage(ctx, control.V(midi.Note(midi.G, 5)))))
+			osc.Range8, osc.Fine(midi.StdTuning),
+			control.Voltage(ctx, float64(midi.Note(midi.G, 5)))))
 		time.Sleep(2 * time.Second)
 		wg.Done()
 	}()

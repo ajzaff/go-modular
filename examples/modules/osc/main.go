@@ -12,8 +12,9 @@ import (
 
 func main() {
 	ctx := modular.New(modular.WithSampleRate(
-		context.Background(), 44000), otodriver.New())
-	modular.Send(ctx, 0, osc.Sine(ctx, 1, osc.Range8,
-		control.V(osc.Fine(midi.StdTuning)),
-		control.Voltage(ctx, control.V(midi.Note(midi.A, 4)))))
+		context.Background(), 96000), otodriver.New())
+	modular.Send(ctx, 0, osc.Pulse(ctx, 1, osc.Range8,
+		osc.Fine(midi.StdTuning),
+		control.Voltage(ctx, .01),
+		control.Voltage(ctx, float64(midi.Note(midi.A, 4)))))
 }
