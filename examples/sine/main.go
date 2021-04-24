@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"sync"
 	"time"
 
@@ -12,7 +13,7 @@ import (
 )
 
 func main() {
-	ctx := modular.NewContext(otodriver.New())
+	ctx := modular.New(context.Background(), otodriver.New())
 
 	var wg sync.WaitGroup
 	wg.Add(3)

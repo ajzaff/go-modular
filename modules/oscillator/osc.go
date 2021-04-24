@@ -115,7 +115,7 @@ func Pulse(ctx context.Context, a Polarity, r Range, fine control.V, w, lin <-ch
 }
 
 func osc(ctx context.Context, a Polarity, wave func() modular.V) <-chan modular.V {
-	ch := make(chan modular.V)
+	ch := make(chan modular.V, modular.BufferSize(ctx))
 	go func() {
 		for {
 			ch <- modular.V(a) * wave()

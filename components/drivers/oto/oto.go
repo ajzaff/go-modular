@@ -10,7 +10,6 @@ import (
 )
 
 type driver struct {
-	ctx context.Context
 	*oto.Context
 }
 
@@ -30,7 +29,6 @@ func (d *driver) Init(ctx context.Context) {
 	if err != nil {
 		panic(err)
 	}
-	d.ctx = ctx
 	d.Context = oto
 }
 
