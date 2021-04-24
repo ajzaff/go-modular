@@ -2,10 +2,13 @@ package midi
 
 import "math"
 
+// Tuning is an interface for a chromatic scale.
 type Tuning interface {
+	// A4Hz returns the frequency of the note A4.
 	A4Hz() float64
 }
 
+// StdTuning is an A440 tuning.
 var StdTuning = stdTuning{}
 
 type stdTuning struct{}
@@ -14,43 +17,55 @@ func (stdTuning) A4Hz() float64 {
 	return 440
 }
 
-// Key returns the clamped MIDI key value.
+func clampKey(k int) uint8 {
+	if k < 0 {
+		k = 0
+	}
+	if k > 127 {
+		k = 127
+	}
+	return uint8(k)
+}
+
+// Key returns the MIDI key value from tuning t and frequency f.
 // A4 is MIDI key 69 for instance.
-func Key(v int) uint8 {
-	if v < 0 {
-		v = 0
-	}
-	if v > 127 {
-		v = 127
-	}
-	return uint8(v)
+func Key(t Tuning, f float64) int {
+	return int(69 + 12*math.Log2(f/t.A4Hz()))
 }
 
-// Pitch uses tuning t to get the frequency of the note hs half steps away from A4.
-func Pitch(t Tuning, hs int) float64 {
-	return Tone(t, float64(hs))
+// Pitch returns the pitch of the midi key in tuning t.
+func Pitch(t Tuning, key int) float64 {
+	return Tone(t, float64(key))
 }
 
-const twelfthRoot2 = 1.0594630943592953
-
-// Tone uses tuning t to get the frequency of the tone hs fractional half steps away from A4.
-func Tone(t Tuning, hs float64) float64 {
-	return t.A4Hz() * math.Pow(twelfthRoot2, hs)
+// Tone returns the tone of the fractional midi key in tuning t.
+func Tone(t Tuning, key float64) float64 {
+	return t.A4Hz() * math.Pow(2, (key-69)/12)
 }
 
+// Note constants starting at octave 0.
 const (
-	A4b = 69 + iota - 1
-	A4
-	B4b
-	B4
-	C4b
-	C4
-	D4b
-	D4
-	E4b
-	E4
-	F4b
-	F4
-	G4b
-	G4
+	C = 12 + iota // C0
+	Db
+	D
+	Eb
+	E
+	F
+	Gb
+	G
+	Ab
+	A
+	Bb
+	B
 )
+
+// Note returns the midi note in octave oct.
+//
+// Example:
+//	A4 = Note(A, 4)
+//
+// Piano notes range from A0 (21) to C8 (108).
+// Midi notes range from C-1 (0) to G9 (127).
+func Note(note, oct int) int {
+	return note + 12*oct
+}

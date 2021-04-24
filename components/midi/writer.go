@@ -13,11 +13,11 @@ import (
 	"gitlab.com/gomidi/portmididrv"
 )
 
-func MidiWriter(driver midi.Writer) sampleio.Writer {
+func _midiWriter(driver midi.Writer) sampleio.Writer {
 	return &midiWriter{driver}
 }
 
-func PortMidiDriver(n int) midi.Writer {
+func portMidiDriver(n int) midi.Writer {
 	drv, err := portmididrv.New()
 	if err != nil {
 		panic(err)
