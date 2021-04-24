@@ -45,18 +45,18 @@ func Tone(t Tuning, key float64) float64 {
 
 // Note constants starting at octave 0.
 const (
-	C = 12 + iota // C0
-	Db
-	D
-	Eb
-	E
-	F
-	Gb
-	G
-	Ab
-	A
-	Bb
-	B
+	C  = 12 + iota // C0
+	Db             // Db0
+	D              // D0
+	Eb             // Eb0
+	E              // E0
+	F              // F0
+	Gb             // Gb0
+	G              // G0
+	Ab             // Ab0
+	A              // A0
+	Bb             // Bb0
+	B              // B0
 )
 
 // Note returns the midi note in octave oct.
