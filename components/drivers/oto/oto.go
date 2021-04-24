@@ -6,8 +6,6 @@ import (
 	"errors"
 
 	"github.com/ajzaff/go-modular"
-	"github.com/ajzaff/go-modular/components/utility"
-	"github.com/ajzaff/go-modular/sampleio"
 	"github.com/hajimehoshi/oto"
 )
 
@@ -38,31 +36,23 @@ func (d *driver) Init(ctx context.Context) {
 
 // Send outputs to the speaker using the Oto driver.
 func (d *driver) Send(ch int, in <-chan modular.V) (n int64, err error) {
-	return sampleio.Copy(d.ctx, &otoWriter{ch, d.Context.NewPlayer()}, utility.Reader(in))
-}
-
-type otoWriter struct {
-	ch     int
-	player *oto.Player
-}
-
-func (w *otoWriter) Write(vs []modular.V) (n int, err error) {
-	switch w.ch {
+	switch player := d.NewPlayer(); ch {
 	case 0:
-		for _, v := range vs {
-			binary.Write(w.player, binary.LittleEndian, convert(float64(v)))
-			binary.Write(w.player, binary.LittleEndian, int16(0))
+		for v := range in {
+			binary.Write(player, binary.LittleEndian, convert(float64(v)))
+			binary.Write(player, binary.LittleEndian, int16(0))
+			n++
 		}
-		return len(vs), nil
 	case 1:
-		for _, v := range vs {
-			binary.Write(w.player, binary.LittleEndian, int16(0))
-			binary.Write(w.player, binary.LittleEndian, convert(float64(v)))
+		for v := range in {
+			binary.Write(player, binary.LittleEndian, int16(0))
+			binary.Write(player, binary.LittleEndian, convert(float64(v)))
+			n++
 		}
-		return len(vs), nil
 	default:
-		return 0, errors.New("otodriver.Write: only stereo channels are supported [0, 1]")
+		return 0, errors.New("otodriver.Send: only 2 stereo channels are supported [0, 1]")
 	}
+	return n, nil
 }
 
 func convert(x float64) int16 {

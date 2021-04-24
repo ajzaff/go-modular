@@ -53,8 +53,8 @@ func Sine(ctx context.Context, a Polarity, r Range, fine control.V, lin <-chan c
 	i := 0
 	sampleRate := modular.SampleRate(ctx)
 	return osc(ctx, a, func() (v modular.V) {
-		freq := Tone(r, float64(fine+<-lin))
-		v.Store(math.Sin(2 * math.Pi * freq * float64(i) / float64(sampleRate)))
+		length := float64(sampleRate) / Tone(r, float64(fine+<-lin))
+		v.Store(math.Sin(2 * math.Pi * float64(i) / length))
 		i++
 		return
 	})
@@ -67,8 +67,8 @@ func Triangle(ctx context.Context, a Polarity, r Range, fine control.V, lin <-ch
 	i := 0
 	sampleRate := modular.SampleRate(ctx)
 	return osc(ctx, a, func() (v modular.V) {
-		freq := Tone(r, float64(fine+<-lin))
-		v.Store(2 / math.Pi * math.Asin(math.Sin(2*math.Pi*freq*float64(i)/float64(sampleRate))))
+		length := float64(sampleRate) / Tone(r, float64(fine+<-lin))
+		v.Store(2 / math.Pi * math.Asin(math.Sin(2*math.Pi*float64(i)/length)))
 		i++
 		return
 	})
@@ -81,8 +81,8 @@ func Saw(ctx context.Context, a Polarity, r Range, fine control.V, lin <-chan co
 	i := 0
 	sampleRate := modular.SampleRate(ctx)
 	return osc(ctx, a, func() (v modular.V) {
-		freq := Tone(r, float64(fine+<-lin))
-		v.Store(2 / math.Pi * math.Atan(math.Tan(math.Pi*freq*float64(i)/float64(sampleRate))))
+		length := float64(sampleRate) / Tone(r, float64(fine+<-lin))
+		v.Store(2 / math.Pi * math.Atan(math.Tan(math.Pi*float64(i)/length)))
 		i++
 		return
 	})
@@ -103,8 +103,8 @@ func Pulse(ctx context.Context, a Polarity, r Range, fine control.V, w, lin <-ch
 	i := 0
 	sampleRate := modular.SampleRate(ctx)
 	return osc(ctx, a, func() (v modular.V) {
-		mid := float64(sampleRate) / Tone(r, float64(fine+<-lin))
-		if math.Mod(float64(i)/mid, 2) < 2*float64(<-w) {
+		length := float64(sampleRate) / Tone(r, float64(fine+<-lin))
+		if math.Mod(float64(i)/length, 2) < 2*float64(<-w) {
 			v.Store(1)
 		} else {
 			v.Store(0)
