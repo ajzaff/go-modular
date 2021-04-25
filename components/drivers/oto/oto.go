@@ -21,7 +21,7 @@ func New() modular.Driver {
 	return &driver{}
 }
 
-const minBuffer = 1024
+const minBuffer = 4096
 
 // Init initializes a new Oto driver.
 //
