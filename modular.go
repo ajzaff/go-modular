@@ -17,9 +17,10 @@ func (v *V) Store(x float64) { *v = V(x) }
 func (v *V) Clear() { v.Store(0) }
 
 var (
-	sampleRateKey int
-	bufferSizeKey int
-	driverKey     int
+	sampleRateKey       int
+	bufferSizeKey       int
+	driverBufferSizeKey int
+	driverKey           int
 )
 
 // Driver is an interface for raw audio output drivers.
@@ -52,6 +53,8 @@ func (ctx *modularContext) Value(key interface{}) interface{} {
 		return SampleRate(ctx.Context)
 	case &bufferSizeKey:
 		return BufferSize(ctx.Context)
+	case &driverBufferSizeKey:
+		return DriverBufferSize(ctx.Context)
 	default:
 		return ctx.Context.Value(key)
 	}
@@ -65,6 +68,11 @@ func WithSampleRate(ctx context.Context, sampleRate int) context.Context {
 // WithBufferSize sets the context buffer size.
 func WithBufferSize(ctx context.Context, bufferSize int) context.Context {
 	return context.WithValue(ctx, &bufferSizeKey, bufferSize)
+}
+
+// WithDriverBufferSize sets the driver context buffer size.
+func WithDriverBufferSize(ctx context.Context, bufferSize int) context.Context {
+	return context.WithValue(ctx, &driverBufferSizeKey, bufferSize)
 }
 
 // SampleRate gets the sample rate for ctx.
@@ -81,6 +89,14 @@ func BufferSize(ctx context.Context) int {
 		return v.(int)
 	}
 	return 0
+}
+
+// DriverBufferSize gets the driver buffer size for ctx.
+func DriverBufferSize(ctx context.Context) int {
+	if v := ctx.Value(&driverBufferSizeKey); v != nil {
+		return v.(int)
+	}
+	return 44100
 }
 
 // Send sends the input signal over the channel ch using the driver in context ctx.

@@ -29,7 +29,7 @@ const minBuffer = 4096
 // Init enforces a minimum buffer size of 1024 to ensure performance.
 func (d *driver) Init(ctx context.Context) {
 	sampleRate := modular.SampleRate(ctx)
-	bufferSize := modular.BufferSize(ctx)
+	bufferSize := modular.DriverBufferSize(ctx)
 	if bufferSize < minBuffer {
 		bufferSize = minBuffer
 	}

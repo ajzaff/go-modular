@@ -11,11 +11,17 @@ import (
 )
 
 func main() {
-	ctx := modular.New(context.Background(), otodriver.New())
+	ctx := modular.New(
+		modular.WithBufferSize(context.Background(), 10000),
+		otodriver.New())
 
 	sine := osc.Sine(ctx, 1, osc.Range8, 0, control.Voltage(ctx, 69))
 	mult := util.Mult(ctx, 2, sine)
 
-	go modular.Send(ctx, 0, mult[0])
-	modular.Send(ctx, 1, mult[1])
+	go func() {
+		_, err := modular.Send(ctx, 0, mult[0])
+		panic(err)
+	}()
+	_, err := modular.Send(ctx, 1, mult[1])
+	panic(err)
 }
