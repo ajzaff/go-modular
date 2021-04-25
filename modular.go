@@ -80,7 +80,7 @@ func BufferSize(ctx context.Context) int {
 	if v := ctx.Value(&bufferSizeKey); v != nil {
 		return v.(int)
 	}
-	return 44100
+	return 0
 }
 
 // Send sends the input signal over the channel ch using the driver in context ctx.

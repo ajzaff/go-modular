@@ -21,11 +21,19 @@ func New() modular.Driver {
 	return &driver{}
 }
 
+const minBuffer = 1024
+
 // Init initializes a new Oto driver.
 //
 // Init should only be called once.
+// Init enforces a minimum buffer size of 1024 to ensure performance.
 func (d *driver) Init(ctx context.Context) {
-	oto, err := oto.NewContext(modular.SampleRate(ctx), 2, 2, modular.BufferSize(ctx))
+	sampleRate := modular.SampleRate(ctx)
+	bufferSize := modular.BufferSize(ctx)
+	if bufferSize < minBuffer {
+		bufferSize = minBuffer
+	}
+	oto, err := oto.NewContext(sampleRate, 2, 2, bufferSize)
 	if err != nil {
 		panic(err)
 	}
