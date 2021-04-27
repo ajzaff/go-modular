@@ -26,10 +26,27 @@ const minBuffer = 4096
 // Init initializes a new Oto driver.
 //
 // Init should only be called once.
-// Init enforces a minimum buffer size of 1024 to ensure performance.
+// Init enforces a minimum buffer size to ensure performance.
 func (d *driver) Init(ctx context.Context) {
 	sampleRate := modular.SampleRate(ctx)
 	bufferSize := modular.DriverBufferSize(ctx)
+	if bufferSize < minBuffer {
+		bufferSize = minBuffer
+	}
+	oto, err := oto.NewContext(sampleRate, 2, 2, bufferSize)
+	if err != nil {
+		panic(err)
+	}
+	d.Context = oto
+}
+
+// InitContext initializes a new Oto driver.
+//
+// InitContext should only be called once.
+// InitContext enforces a minimum buffer size to ensure performance.
+func (d *driver) InitContext(ctx *modular.Context) {
+	sampleRate := ctx.SampleRate
+	bufferSize := ctx.DriverBufferSize
 	if bufferSize < minBuffer {
 		bufferSize = minBuffer
 	}
@@ -54,6 +71,34 @@ func (d *driver) Send(ch int, in <-chan modular.V) (n int64, err error) {
 			binary.Write(player, binary.LittleEndian, int16(0))
 			binary.Write(player, binary.LittleEndian, convert(float64(v)))
 			n++
+		}
+	default:
+		return 0, errors.New("otodriver.Send: only 2 stereo channels are supported [0, 1]")
+	}
+	return n, nil
+}
+
+// SendSamples outputs to the speaker using the Oto driver.
+func (d *driver) SendSamples(ch int, in <-chan modular.Sample) (n int64, err error) {
+	player := d.NewPlayer()
+	switch ch {
+	case 0:
+		for vs := range in {
+			for _, v := range vs {
+				binary.Write(player, binary.LittleEndian, convert(float64(v)))
+				binary.Write(player, binary.LittleEndian, int16(0))
+				n++
+			}
+			modular.FreeSample(&vs)
+		}
+	case 1:
+		for vs := range in {
+			for _, v := range vs {
+				binary.Write(player, binary.LittleEndian, int16(0))
+				binary.Write(player, binary.LittleEndian, convert(float64(v)))
+				n++
+			}
+			modular.FreeSample(&vs)
 		}
 	default:
 		return 0, errors.New("otodriver.Send: only 2 stereo channels are supported [0, 1]")

@@ -32,8 +32,14 @@ type Driver interface {
 	// Init initializes the driver based on the context ctx.
 	Init(ctx context.Context)
 
+	// InitContext initializes the driver based on the context ctx.
+	InitContext(ctx *Context)
+
 	// Send sends audio data to the output.
 	Send(ch int, in <-chan V) (n int64, err error)
+
+	// SendSamples sends audio data to the output.
+	SendSamples(ch int, in <-chan Sample) (n int64, err error)
 }
 
 // New returns a new modular context from ctx with default options.

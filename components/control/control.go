@@ -14,11 +14,23 @@ import (
 // The alias can be used to differentiate between audio and control voltages.
 type CV <-chan modular.V
 
+// CV is a control voltage.
+//
+// The alias can be used to differentiate between audio and control voltages.
+type CVSamples <-chan modular.Sample
+
 // Voltage returns a CV from a singluar value v.
 //
 // Equivalent to calling Func with a constant-yielding func.
 func Voltage(ctx context.Context, v float64) CV {
 	return Func(ctx, func() modular.V { return modular.V(v) })
+}
+
+// VoltageSamples returns CVSamples from a singluar value v.
+//
+// Equivalent to calling FuncSamples with a constant-yielding func.
+func VoltageSamples(ctx *modular.Context, v float64) CVSamples {
+	return FuncSamples(ctx, func() float64 { return v })
 }
 
 // Func returns a variable voltage source from evaluating fn.
@@ -27,6 +39,21 @@ func Func(ctx context.Context, fn func() modular.V) CV {
 	go func() {
 		for {
 			ch <- fn()
+		}
+	}()
+	return ch
+}
+
+// FuncSamples returns a variable voltage source from evaluating fn.
+func FuncSamples(ctx *modular.Context, fn func() float64) CVSamples {
+	ch := make(chan modular.Sample, ctx.BufferSize)
+	go func() {
+		for {
+			buf := modular.GetSample()
+			for i := range buf {
+				buf[i] = fn()
+			}
+			ch <- buf
 		}
 	}()
 	return ch

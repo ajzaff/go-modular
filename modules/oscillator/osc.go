@@ -60,6 +60,32 @@ func Sine(ctx context.Context, a Polarity, r Range, fine float64, lin control.CV
 	})
 }
 
+// SineSamples outputs sine audio wave from samples from the linear signal and parameters.
+//
+// Linear signal lin conforms to the real midi scale (one volt per octave).
+func SineSamples(ctx *modular.Context, a Polarity, r Range, fine float64, lin control.CVSamples) <-chan modular.Sample {
+	ch := make(chan modular.Sample, ctx.BufferSize)
+	go func() {
+		sampleRate := ctx.SampleRate
+		i := 0
+		for {
+			buf := modular.GetSample()
+			linBuf := modular.GetSample()
+			copy(linBuf, <-lin)
+			for j := range buf {
+				buf[j] = float64(a) * func() (v float64) {
+					length := float64(sampleRate) / Tone(r, fine+float64(linBuf[j]))
+					v = math.Sin(2 * math.Pi * float64(i) / length)
+					i++
+					return
+				}()
+			}
+			ch <- buf
+		}
+	}()
+	return ch
+}
+
 // Triangle outputs an triangle wave from the linear signal and parameters.
 //
 // Linear signal lin conforms to the real midi scale (one volt per octave).
