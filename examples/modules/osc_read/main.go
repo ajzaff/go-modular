@@ -2,7 +2,6 @@ package main
 
 import (
 	"github.com/ajzaff/go-modular"
-	"github.com/ajzaff/go-modular/components/control"
 	otodriver "github.com/ajzaff/go-modular/components/drivers/oto"
 	"github.com/ajzaff/go-modular/components/midi"
 	osc "github.com/ajzaff/go-modular/modules/oscillator"
@@ -20,7 +19,12 @@ func main() {
 		Driver: drv,
 	}
 	drv.InitContext(ctx)
-	ctx.SendSamples(0, osc.SineSamples(ctx, 1, osc.Range8,
-		osc.Fine(midi.StdTuning),
-		control.VoltageSamples(ctx, 69)))
+
+	note := make(chan modular.V, 1)
+	go func() {
+		note <- 69
+	}()
+
+	ctx.SendReader(0, osc.SineReader(ctx, 1, osc.Range8,
+		osc.Fine(midi.StdTuning), note))
 }

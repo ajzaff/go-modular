@@ -78,27 +78,29 @@ func (d *driver) Send(ch int, in <-chan modular.V) (n int64, err error) {
 	return n, nil
 }
 
-// SendSamples outputs to the speaker using the Oto driver.
-func (d *driver) SendSamples(ch int, in <-chan modular.Sample) (n int64, err error) {
+// SendReader outputs to the speaker using the Oto driver.
+func (d *driver) SendReader(ch int, r modular.Reader) (n int64, err error) {
 	player := d.NewPlayer()
 	switch ch {
 	case 0:
-		for vs := range in {
-			for _, v := range vs {
+		buf := make([]modular.V, 512)
+		for {
+			n1, _ := r.Read(buf)
+			for _, v := range buf[:n1] {
 				binary.Write(player, binary.LittleEndian, convert(float64(v)))
 				binary.Write(player, binary.LittleEndian, int16(0))
 				n++
 			}
-			modular.FreeSample(&vs)
 		}
 	case 1:
-		for vs := range in {
-			for _, v := range vs {
+		buf := make([]modular.V, 512)
+		for {
+			n1, _ := r.Read(buf)
+			for _, v := range buf[:n1] {
 				binary.Write(player, binary.LittleEndian, int16(0))
 				binary.Write(player, binary.LittleEndian, convert(float64(v)))
 				n++
 			}
-			modular.FreeSample(&vs)
 		}
 	default:
 		return 0, errors.New("otodriver.Send: only 2 stereo channels are supported [0, 1]")

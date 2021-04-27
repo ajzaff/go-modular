@@ -17,7 +17,7 @@ func (ctx *Context) Send(ch int, in <-chan V) (n int64, err error) {
 	return ctx.Driver.Send(ch, in)
 }
 
-// SendSamples sends the sample stream over the channel ch using the driver from ctx.
-func (ctx *Context) SendSamples(ch int, in <-chan Sample) (n int64, err error) {
-	return ctx.Driver.SendSamples(ch, in)
+// SendReader sends the sample stream over the channel ch using the driver from ctx.
+func (ctx *Context) SendReader(ch int, r Reader) (n int64, err error) {
+	return ctx.Driver.SendReader(ch, r)
 }

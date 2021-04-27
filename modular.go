@@ -5,7 +5,7 @@ import (
 	"errors"
 )
 
-// V is a singular mono audio sample.
+// V is a mono audio sample.
 //
 // Short for voltage.
 type V float64
@@ -38,8 +38,8 @@ type Driver interface {
 	// Send sends audio data to the output.
 	Send(ch int, in <-chan V) (n int64, err error)
 
-	// SendSamples sends audio data to the output.
-	SendSamples(ch int, in <-chan Sample) (n int64, err error)
+	// SendReader sends audio data to the output from r.
+	SendReader(ch int, r Reader) (n int64, err error)
 }
 
 // New returns a new modular context from ctx with default options.

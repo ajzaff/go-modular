@@ -60,30 +60,40 @@ func Sine(ctx context.Context, a Polarity, r Range, fine float64, lin control.CV
 	})
 }
 
-// SineSamples outputs sine audio wave from samples from the linear signal and parameters.
+// SineReader outputs sine audio wave from samples from the linear signal and parameters.
 //
 // Linear signal lin conforms to the real midi scale (one volt per octave).
-func SineSamples(ctx *modular.Context, a Polarity, r Range, fine float64, lin control.CVSamples) <-chan modular.Sample {
-	ch := make(chan modular.Sample, ctx.BufferSize)
+func SineReader(ctx *modular.Context, a Polarity, r Range, fine float64, lin control.CV) modular.Reader {
+	rd := &sineReader{
+		a:    a,
+		r:    r,
+		fine: fine,
+		opts: ctx.Options,
+	}
 	go func() {
-		sampleRate := ctx.SampleRate
-		i := 0
-		for {
-			buf := modular.GetSample()
-			linBuf := modular.GetSample()
-			copy(linBuf, <-lin)
-			for j := range buf {
-				buf[j] = float64(a) * func() (v float64) {
-					length := float64(sampleRate) / Tone(r, fine+float64(linBuf[j]))
-					v = math.Sin(2 * math.Pi * float64(i) / length)
-					i++
-					return
-				}()
-			}
-			ch <- buf
+		for v := range lin {
+			rd.v.Store(v)
 		}
 	}()
-	return ch
+	return rd
+}
+
+type sineReader struct {
+	a    Polarity
+	r    Range
+	fine float64
+	i    uint64
+	v    control.Atomic
+	opts modular.Options
+}
+
+func (r *sineReader) Read(vs []modular.V) (n int, err error) {
+	for i := range vs {
+		length := float64(r.opts.SampleRate) / Tone(r.r, r.fine+float64(r.v.Load()))
+		vs[i] = modular.V(math.Sin(2 * math.Pi * float64(r.i) / length))
+		r.i++
+	}
+	return len(vs), nil
 }
 
 // Triangle outputs an triangle wave from the linear signal and parameters.
