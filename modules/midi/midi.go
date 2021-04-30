@@ -1,74 +1,67 @@
 package midi
 
 import (
-	"context"
 	"fmt"
 
 	"github.com/ajzaff/go-modular"
-	"github.com/ajzaff/go-modular/components/control"
-	"gitlab.com/gomidi/midi/reader"
-	"gitlab.com/gomidi/portmididrv"
+	"gitlab.com/gomidi/rtmididrv"
 )
 
 // Interface returns midi CVs for the stream of midi messages
 // on the single midi input channel (i, ch).
 //
 // Interface is unbuffered to minimize trigger latency.
-func Interface(ctx context.Context, i, ch uint8) (gate, key, vel control.CV, err error) {
+type Interface struct {
+	drv *rtmididrv.Driver
+}
+
+// New creates a new midi interface on input i MIDI channel ch.
+func New(i, ch uint8) (iface *Interface, err error) {
 	defer func() {
 		if err != nil {
-			err = fmt.Errorf("midi.Interface: %v", err)
+			err = fmt.Errorf("midi.New: %v", err)
 		}
 	}()
 
-	drv, err := portmididrv.New()
+	drv, err := rtmididrv.New()
 	if err != nil {
-		return nil, nil, nil, err
+		return nil, err
 	}
 
 	ins, err := drv.Ins()
 	if len(ins) <= int(i) {
-		return nil, nil, nil, err
+		return nil, err
 	}
 
 	in := ins[i]
 	if err := in.Open(); err != nil {
-		return nil, nil, nil, err
+		return nil, err
 	}
 
-	rd := reader.New(reader.NoLogger())
+	iface = &Interface{}
+	return iface, nil
+}
 
-	gateCh := make(chan modular.V)
-	keyCh := make(chan modular.V)
-	velCh := make(chan modular.V)
+func (i *Interface) UpdateConfig(cfg *modular.Config) error {
+	return nil
+}
 
-	rd.Channel.NoteOn = func(p *reader.Position, channel, key, vel uint8) {
-		if channel != ch {
-			return
-		}
-		gateCh <- 1
-		keyCh <- modular.V(key)
-		velCh <- modular.V(vel) / 127
-	}
+func SparseGate() modular.SparseReader {
+	panic("midi.Interface.SparseGate: not implemented")
+}
 
-	rd.Channel.NoteOff = func(p *reader.Position, channel, key, vel uint8) {
-		if channel != ch {
-			return
-		}
-		gateCh <- 0
-		velCh <- 0
-	}
+func Key() modular.Reader {
+	panic("midi.Interface.Key: not implemented")
+}
 
-	go func() {
-		defer func() {
-			close(gateCh)
-			close(keyCh)
-			close(velCh)
-		}()
-		if err := rd.ListenTo(in); err != nil {
-			panic(fmt.Errorf("midi.Interface: %v", err))
-		}
-	}()
+func SparseKey() modular.SparseReader {
+	panic("midi.Interface.SparseKey: not implemented")
+}
 
-	return gateCh, keyCh, velCh, nil
+func Vel() modular.Reader {
+	panic("midi.Interface.Vel: not implemented")
+}
+
+func SparseVel() modular.Reader {
+	panic("midi.Interface.SparseVel: not implemented")
 }

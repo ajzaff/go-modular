@@ -1,27 +1,28 @@
 package main
 
 import (
-	"context"
-
 	"github.com/ajzaff/go-modular"
-	"github.com/ajzaff/go-modular/components/control"
-	otodriver "github.com/ajzaff/go-modular/components/drivers/oto"
-	osc "github.com/ajzaff/go-modular/modules/oscillator"
+	"github.com/ajzaff/go-modular/drivers/otodriver"
+	"github.com/ajzaff/go-modular/modules/osc"
 	"github.com/ajzaff/go-modular/modules/util"
 )
 
 func main() {
-	ctx := modular.New(
-		modular.WithBufferSize(context.Background(), 10000),
-		otodriver.New())
-
-	sine := osc.Sine(ctx, 1, osc.Range8, 0, control.Voltage(ctx, 69))
-	mult := util.Mult(ctx, 2, sine)
-
-	go func() {
-		_, err := modular.Send(ctx, 0, mult[0])
+	mod, err := modular.New(otodriver.New())
+	if err != nil {
 		panic(err)
+	}
+	defer func() {
+		if err := mod.Close(); err != nil {
+			panic(err)
+		}
 	}()
-	_, err := modular.Send(ctx, 1, mult[1])
-	panic(err)
+
+	var mult util.Mult
+
+	w := osc.Saw(.1, osc.Range8, 0)
+
+	mod.Patch(&mult, modular.NopProcessor(w))
+	mod.Patch(mod.Send(0), modular.NopProcessor(mult.New()))
+	mod.Patch(mod.Send(1), modular.NopProcessor(mult.New()))
 }

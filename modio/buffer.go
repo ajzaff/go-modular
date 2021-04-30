@@ -1,4 +1,4 @@
-package sampleio
+package modio
 
 import (
 	"errors"
@@ -16,8 +16,8 @@ func NewBuffer(buf []modular.V) *Buffer {
 	return &Buffer{buf: buf}
 }
 
-var errTooLarge = errors.New("sample.Buffer: too large")
-var errNegativeRead = errors.New("sample.Buffer: reader returned negative count from Read")
+var errTooLarge = errors.New("modio.Buffer: too large")
+var errNegativeRead = errors.New("modio.Buffer: reader returned negative count from Read")
 
 const maxInt = int(^uint(0) >> 1)
 
@@ -35,7 +35,7 @@ func (b *Buffer) Truncate(n int) {
 		return
 	}
 	if n < 0 || n > b.Len() {
-		panic("bytes.Buffer: truncation out of range")
+		panic("modio.Buffer: truncation out of range")
 	}
 	b.buf = b.buf[:b.off+n]
 }
@@ -92,7 +92,7 @@ func (b *Buffer) grow(n int) int {
 
 func (b *Buffer) Grow(n int) {
 	if n < 0 {
-		panic("bytes.Buffer.Grow: negative count")
+		panic("modio.Buffer.Grow: negative count")
 	}
 	m := b.grow(n)
 	b.buf = b.buf[:m]
@@ -108,7 +108,7 @@ func (b *Buffer) Write(p []modular.V) (n int, err error) {
 
 const MinRead = 512
 
-func (b *Buffer) ReadFrom(r Reader) (n int64, err error) {
+func (b *Buffer) ReadFrom(r modular.Reader) (n int64, err error) {
 	for {
 		i := b.grow(MinRead)
 		b.buf = b.buf[:i]
@@ -138,11 +138,11 @@ func makeSlice(n int) []modular.V {
 	return make([]modular.V, n)
 }
 
-func (b *Buffer) WriteTo(w Writer) (n int64, err error) {
+func (b *Buffer) WriteTo(w modular.Writer) (n int64, err error) {
 	if nSamples := b.Len(); nSamples > 0 {
 		m, e := w.Write(b.buf[b.off:])
 		if m > nSamples {
-			panic("sample.Buffer.WriteTo: invalid Write count")
+			panic("modio.Buffer.WriteTo: invalid Write count")
 		}
 		b.off += m
 		n = int64(m)
