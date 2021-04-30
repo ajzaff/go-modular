@@ -1,31 +1,48 @@
 package util
 
 import (
-	"context"
+	"sync"
 
 	"github.com/ajzaff/go-modular"
+	"github.com/ajzaff/go-modular/modio"
 )
 
 // Mult copies the input audio signal n times.
-//
-// Note: all outputs must be utilized to avoid deadlocking.
-func Mult(ctx context.Context, n int, in <-chan modular.V) []chan modular.V {
-	if n <= 0 {
-		panic("util.Mult: mult with <= 0 outputs")
-	}
-	out := make([]chan modular.V, n)
-	for i := range out {
-		out[i] = make(chan modular.V, modular.BufferSize(ctx))
-	}
-	go func() {
-		for v := range in {
-			for _, ch := range out {
-				ch <- v
-			}
+type Mult struct {
+	outputs []*multOutput
+	mu      sync.RWMutex
+}
+
+func (m *Mult) Write(vs []modular.V) (n int, err error) {
+	m.mu.Lock()
+	defer m.mu.Unlock()
+
+	for _, out := range m.outputs {
+		if n, err = out.buf.Write(vs); err != nil {
+			return n, err
 		}
-		for _, ch := range out {
-			close(ch)
-		}
-	}()
+	}
+	return n, err
+}
+
+// New creates a new mult output.
+func (m *Mult) New() modular.Reader {
+	m.mu.Lock()
+	defer m.mu.Unlock()
+
+	out := &multOutput{mu: &m.mu}
+	m.outputs = append(m.outputs, out)
 	return out
+}
+
+type multOutput struct {
+	buf modio.Buffer
+	mu  *sync.RWMutex
+}
+
+func (m *multOutput) Read(vs []modular.V) (n int, err error) {
+	m.mu.RLock()
+	defer m.mu.RUnlock()
+
+	return m.buf.Read(vs)
 }
