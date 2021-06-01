@@ -2,7 +2,7 @@
 
 A software modular synthesizer with Midi support.
 
-**!! Warning: High amplitude sounds can cause serious ear damage. Lower your headphone volume before using !!**
+**!! Warning: High amplitude sounds can cause ear damage. Lower your headphone volume before using !!**
 
 ## Install
 

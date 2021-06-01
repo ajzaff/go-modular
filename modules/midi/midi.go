@@ -4,6 +4,8 @@ import (
 	"fmt"
 
 	"github.com/ajzaff/go-modular"
+	"gitlab.com/gomidi/midi"
+	"gitlab.com/gomidi/midi/reader"
 	"gitlab.com/gomidi/rtmididrv"
 )
 
@@ -12,7 +14,10 @@ import (
 //
 // Interface is unbuffered to minimize trigger latency.
 type Interface struct {
-	drv *rtmididrv.Driver
+	gate modular.V
+	in   midi.In
+	ch   uint8
+	drv  *rtmididrv.Driver
 }
 
 // New creates a new midi interface on input i MIDI channel ch.
@@ -38,7 +43,7 @@ func New(i, ch uint8) (iface *Interface, err error) {
 		return nil, err
 	}
 
-	iface = &Interface{}
+	iface = &Interface{ch: ch, in: in}
 	return iface, nil
 }
 
@@ -46,22 +51,79 @@ func (i *Interface) UpdateConfig(cfg *modular.Config) error {
 	return nil
 }
 
-func SparseGate() modular.SparseReader {
-	panic("midi.Interface.SparseGate: not implemented")
+func (i *Interface) GateKey() (gate, key modular.Reader) {
+	ch := i.ch
+	g, k := &midiGateReader{}, &midiKeyReader{}
+	rd := reader.New(reader.NoLogger())
+	rd.Channel.NoteOn = func(p *reader.Position, channel uint8, key uint8, velocity uint8) {
+		if channel != ch {
+			return
+		}
+		k.key = modular.V(key)
+		g.gate = 1
+	}
+	rd.Channel.NoteOff = func(p *reader.Position, channel uint8, key uint8, velocity uint8) {
+		if channel != ch {
+			return
+		}
+		g.gate = 0
+	}
+	if err := rd.ListenTo(i.in); err != nil {
+		panic(fmt.Errorf("midi.Interface.Key: %v", err))
+	}
+	return g, k
 }
 
-func Key() modular.Reader {
-	panic("midi.Interface.Key: not implemented")
+type midiKeyReader struct {
+	in  midi.In
+	key modular.V
 }
 
-func SparseKey() modular.SparseReader {
-	panic("midi.Interface.SparseKey: not implemented")
+func (r *midiKeyReader) Read(vs []modular.V) (n int, err error) {
+	for i := range vs {
+		vs[i] = r.key
+	}
+	return len(vs), nil
 }
 
-func Vel() modular.Reader {
+func (r *midiKeyReader) Close() error {
+	if err := r.in.StopListening(); err != nil {
+		return err
+	}
+	return r.in.Close()
+}
+
+type midiGateReader struct {
+	in   midi.In
+	gate modular.V
+}
+
+func (r *midiGateReader) Read(vs []modular.V) (n int, err error) {
+	for i := range vs {
+		vs[i] = r.gate
+	}
+	return len(vs), nil
+}
+
+func (r *midiGateReader) Close() error {
+	if err := r.in.StopListening(); err != nil {
+		return err
+	}
+	return r.in.Close()
+}
+
+func (i *Interface) Vel() modular.Reader {
 	panic("midi.Interface.Vel: not implemented")
 }
 
-func SparseVel() modular.Reader {
+func (i *Interface) SparseKey() modular.SparseReader {
+	panic("midi.Interface.SparseKey: not implemented")
+}
+
+func (i *Interface) SparseGate() modular.SparseReader {
+	panic("midi.Interface.SparseGate: not implemented")
+}
+
+func (i *Interface) SparseVel() modular.Reader {
 	panic("midi.Interface.SparseVel: not implemented")
 }

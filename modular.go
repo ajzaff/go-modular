@@ -38,10 +38,12 @@ func NewConfig() *Config {
 	}
 }
 
-// BlockSize is an interface for modules with a suggested block size.
+// BlockSize is an interface for modules requiring a minimum number of samples.
 //
-// This is useful for modules expecting a minimum amount of data to work,
-// for instance, an averaging algorithm.
+// For instance, block filters require a ceterain amount of samples to work.
+//
+// By default the blocksize is determined by the synth engine and assumed to be
+// 1:1 for input:output.
 type BlockSize interface {
 	// BlockSize returns the minimum input and output block sizes.
 	//
@@ -78,12 +80,17 @@ type Module interface {
 	// Processes the audio buffer and returns the resulting data slice.
 	//
 	// The buf is structured particularly with space preallocated for the
-	// inputs and outputs; having inputs concatenated with outputs:
+	// inputs and outputs; having inputs concatenated after outputs:
 	//
-	//	[ in1..in2..in3..in_n | out1..out2..out3..out_n ]
+	//	[ out1..out2..out3..out_n | in1..in2..in3..in_n ]
 	//
-	// A custom number of inputs and outputs can be specified using the
-	// optional Shape interface method.
+	// The optional Shape interface method controls the number of
+	// inputs and outputs which must not change during the lifetime of
+	// a Module.
+	//
+	// The optional Blocksize interface method controls the minimum
+	// number of samples for each in_i and out_i. Otherwise, this value
+	// is determined by the synth engine.
 	//
 	// Module must not retain buf.
 	Process(buf []V)

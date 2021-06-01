@@ -4,7 +4,6 @@ import (
 	"time"
 
 	"github.com/ajzaff/go-modular"
-	"github.com/ajzaff/go-modular/modio"
 )
 
 type triggerState int
@@ -28,7 +27,7 @@ type Envelope struct {
 	a, d       time.Duration
 	s          float64
 	r          time.Duration
-	buf        modio.Buffer
+	buf        []modular.V
 	t          float64
 	len        float64
 	state      triggerState
@@ -41,7 +40,7 @@ func New(a time.Duration, d time.Duration, s float64, r time.Duration) *Envelope
 		d,
 		s,
 		r,
-		modio.Buffer{},
+		nil,
 		0,
 		0,
 		stateAwait,
@@ -66,7 +65,7 @@ func length(sampleRate int, d time.Duration) float64 {
 }
 
 func (e *Envelope) Read(vs []modular.V) (n int, err error) {
-	n, err = e.buf.Read(vs)
+	n = copy(vs, e.buf)
 	for i, v := range vs[:n] {
 		switch e.state {
 		case stateAwait:

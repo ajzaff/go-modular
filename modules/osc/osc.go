@@ -6,7 +6,6 @@ import (
 
 	"github.com/ajzaff/go-modular"
 	"github.com/ajzaff/go-modular/midi"
-	"github.com/ajzaff/go-modular/modio"
 )
 
 // Polarity controls the polarity of waveform functions.
@@ -49,7 +48,8 @@ type Osc struct {
 	fn         func(v modular.V, t, sampleRate float64) modular.V
 	t          int
 	sampleRate float64
-	buf        modio.Buffer
+	buf        []modular.V
+	p          int
 }
 
 func (o *Osc) SetConfig(cfg *modular.Config) error {
@@ -57,19 +57,36 @@ func (o *Osc) SetConfig(cfg *modular.Config) error {
 	return nil
 }
 
-func (o *Osc) BlockSize() int { return 0 }
+func (o *Osc) BlockSize() int { return 512 }
 
 func (o *Osc) Write(vs []modular.V) (n int, err error) {
-	return o.buf.Write(vs)
+	if o.buf == nil {
+		o.buf = make([]modular.V, 512)
+	}
+	n = copy(o.buf[o.p:], vs)
+	o.p += n
+	return n, nil
 }
 
 func (o *Osc) Read(vs []modular.V) (n int, err error) {
-	n, err = o.buf.Read(vs)
+	n = copy(vs, o.buf[:o.p])
+	o.p -= n
+	copy(o.buf, o.buf[n:])
+	o.buf = o.buf[0:o.p:cap(o.buf)]
 	for i, v := range vs[:n] {
 		vs[i] = o.fn(v, float64(o.t), o.sampleRate)
 		o.t++
 	}
-	return n, err
+	return n, nil
+}
+
+func (o *Osc) ReadStream() modular.V {
+	var v modular.V
+	if o.p < len(o.buf) {
+		v = o.buf[o.p]
+		o.p++
+	}
+	return o.fn(v, float64(o.t), o.sampleRate)
 }
 
 // Sine outputs an sine audio wave from the linear signal and parameters.
@@ -77,10 +94,8 @@ func (o *Osc) Read(vs []modular.V) (n int, err error) {
 // Linear signal lin conforms to the real midi scale (one volt per octave).
 func Sine(a Polarity, r Range, fine float64) *Osc {
 	return &Osc{
-		fn: func(x modular.V, t, sampleRate float64) (v modular.V) {
-			wavelen := float64(sampleRate) / Tone(r, fine+float64(x))
-			v = modular.V(a) * modular.V(math.Sin(2*math.Pi*float64(t)/wavelen))
-			return
+		fn: func(x modular.V, t, sampleRate float64) modular.V {
+			return modular.V(a) * modular.V(math.Sin(2*math.Pi*float64(t)*Tone(r, fine+float64(x))/float64(sampleRate)))
 		},
 	}
 }
@@ -91,9 +106,7 @@ func Sine(a Polarity, r Range, fine float64) *Osc {
 func Triangle(a Polarity, r Range, fine float64) *Osc {
 	return &Osc{
 		fn: func(x modular.V, t, sampleRate float64) (v modular.V) {
-			length := float64(sampleRate) / Tone(r, fine+float64(x))
-			v = modular.V(a) * modular.V(2/math.Pi*math.Asin(math.Sin(2*math.Pi*float64(t)/length)))
-			return
+			return modular.V(a) * modular.V(2/math.Pi*math.Asin(math.Sin(2*math.Pi*float64(t)*Tone(r, fine+float64(x))/float64(sampleRate))))
 		},
 	}
 }
@@ -104,9 +117,7 @@ func Triangle(a Polarity, r Range, fine float64) *Osc {
 func Saw(a Polarity, r Range, fine float64) *Osc {
 	return &Osc{
 		fn: func(x modular.V, t, sampleRate float64) (v modular.V) {
-			length := float64(sampleRate) / Tone(r, fine+float64(x))
-			v = modular.V(a) * modular.V(2/math.Pi*math.Atan(math.Tan(math.Pi*float64(t)/length)))
-			return
+			return modular.V(a) * modular.V(2/math.Pi*math.Atan(math.Tan(math.Pi*float64(t)*Tone(r, fine+float64(x))/float64(sampleRate))))
 		},
 	}
 }
@@ -127,8 +138,7 @@ func Square(a Polarity, r Range, fine float64) *Osc {
 func Pulse(a Polarity, c float64, r Range, fine float64, w modular.V) *Osc {
 	return &Osc{
 		fn: func(x modular.V, t, sampleRate float64) (v modular.V) {
-			length := float64(sampleRate) / Tone(r, fine+float64(x))
-			if math.Mod(float64(t)/length, 2) < 2*float64(w) {
+			if math.Mod(float64(t)*Tone(r, fine+float64(x))/float64(sampleRate), 2) < 2*float64(w) {
 				v = modular.V(a) + modular.V(c)
 			} else {
 				v = modular.V(-a) + modular.V(c)
