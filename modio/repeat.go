@@ -1,21 +1,19 @@
 package modio
 
-import "github.com/ajzaff/go-modular"
-
 // Repeat returns a new sample with b repeated count times.
 //
 // It panics if count is negative or if
 // the result of (len(b) * count) overflows.
-func Repeat(b []modular.V, count int) []modular.V {
+func Repeat(b []float32, count int) []float32 {
 	if count == 0 {
-		return []modular.V{}
+		return []float32{}
 	}
 	if count < 0 {
 		panic("modio.Repeat: negative Repeat count")
 	} else if len(b)*count/count != len(b) {
 		panic("modio.Repeat: count causes overflow")
 	}
-	nb := make([]modular.V, len(b)*count)
+	nb := make([]float32, len(b)*count)
 	bp := copy(nb, b)
 	for bp < len(nb) {
 		copy(nb[bp:], nb[:bp])

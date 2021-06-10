@@ -3,12 +3,10 @@ package modular
 import (
 	"fmt"
 	"io"
-
-	"github.com/ajzaff/go-modular"
 )
 
 type Buffer struct {
-	buf []modular.V
+	buf []float32
 	p   int64
 }
 

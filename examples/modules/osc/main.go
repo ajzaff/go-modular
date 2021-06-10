@@ -1,33 +1,26 @@
 package main
 
 import (
-	"time"
-
 	"github.com/ajzaff/go-modular"
-	"github.com/ajzaff/go-modular/control"
-	"github.com/ajzaff/go-modular/drivers/otodriver"
 	"github.com/ajzaff/go-modular/midi"
 	"github.com/ajzaff/go-modular/modules/osc"
+	"github.com/ajzaff/go-modular/modules/output/otoplayer"
 )
 
 func main() {
-	mod, err := modular.New(otodriver.New())
-	if err != nil {
-		panic(err)
+	cfg := modular.New()
+
+	b := modular.Block{Buf: make([]float32, 5*44100)}
+
+	for i := range b.Buf {
+		b.Buf[i] = 69. / 12
 	}
-	defer func() {
-		if err := mod.Close(); err != nil {
-			panic(err)
-		}
-	}()
 
-	cancel := mod.Patch(mod.Send(0),
-		osc.Sine(.1, osc.Range8, osc.Fine(midi.StdTuning)),
-		modular.NopProcessor(control.Voltage(69)))
+	wave := osc.Sine(.1, osc.Range8, osc.Fine(midi.StdTuning))
+	wave.SetConfig(cfg)
+	wave.Process(b)
 
-	time.Sleep(5 * time.Second)
-
-	if err := cancel(); err != nil {
-		panic(err)
-	}
+	oto := otoplayer.New()
+	oto.SetConfig(cfg)
+	oto.Send(0).Process(b)
 }

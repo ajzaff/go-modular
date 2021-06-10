@@ -25,16 +25,16 @@ const (
 //	0->0: Off.
 type Envelope struct {
 	a, d       time.Duration
-	s          float64
+	s          float32
 	r          time.Duration
-	buf        []modular.V
-	t          float64
-	len        float64
+	buf        []float32
+	t          float32
+	len        float32
 	state      triggerState
 	sampleRate int
 }
 
-func New(a time.Duration, d time.Duration, s float64, r time.Duration) *Envelope {
+func New(a time.Duration, d time.Duration, s float32, r time.Duration) *Envelope {
 	return &Envelope{
 		a,
 		d,
@@ -53,18 +53,18 @@ func (e *Envelope) UpdateConfig(cfg *modular.Config) error {
 	return nil
 }
 
-func (e *Envelope) Gate() modular.SparseWriter {
+func (e *Envelope) Gate() modular.Processor {
 	panic("adsr.Envelope.Gate: not implemented")
 }
 
-func length(sampleRate int, d time.Duration) float64 {
+func length(sampleRate int, d time.Duration) float32 {
 	if d == 0 {
 		return 0
 	}
-	return float64(sampleRate) * d.Seconds()
+	return float32(sampleRate) * float32(d.Seconds())
 }
 
-func (e *Envelope) Read(vs []modular.V) (n int, err error) {
+func (e *Envelope) Read(vs []float32) (n int, err error) {
 	n = copy(vs, e.buf)
 	for i, v := range vs[:n] {
 		switch e.state {
@@ -96,7 +96,7 @@ func (e *Envelope) Read(vs []modular.V) (n int, err error) {
 				e.len = length(e.sampleRate, e.r)
 				continue
 			}
-			vs[i] = modular.V(e.s)
+			vs[i] = float32(e.s)
 		case stateRelease:
 			if v > 0 {
 				e.state = stateAttack
@@ -104,7 +104,7 @@ func (e *Envelope) Read(vs []modular.V) (n int, err error) {
 				e.len = length(e.sampleRate, e.a)
 				continue
 			}
-			vs[i] = modular.V(e.s - e.s*e.t/e.len)
+			vs[i] = float32(e.s - e.s*e.t/e.len)
 			e.t++
 			if e.len < e.t+1 {
 				e.state = stateAwait

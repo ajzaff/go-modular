@@ -14,7 +14,7 @@ import (
 //
 // Interface is unbuffered to minimize trigger latency.
 type Interface struct {
-	gate modular.V
+	gate float32
 	in   midi.In
 	ch   uint8
 	drv  *rtmididrv.Driver
@@ -47,19 +47,19 @@ func New(i, ch uint8) (iface *Interface, err error) {
 	return iface, nil
 }
 
-func (i *Interface) UpdateConfig(cfg *modular.Config) error {
+func (i *Interface) SetConfig(cfg *modular.Config) error {
 	return nil
 }
 
-func (i *Interface) GateKey() (gate, key modular.Reader) {
+func (i *Interface) GateKey() (gate, key modular.Processor) {
 	ch := i.ch
-	g, k := &midiGateReader{}, &midiKeyReader{}
+	g, k := &midiGateProcessor{}, &midiKeyProcessor{}
 	rd := reader.New(reader.NoLogger())
 	rd.Channel.NoteOn = func(p *reader.Position, channel uint8, key uint8, velocity uint8) {
 		if channel != ch {
 			return
 		}
-		k.key = modular.V(key)
+		k.key = float32(key)
 		g.gate = 1
 	}
 	rd.Channel.NoteOff = func(p *reader.Position, channel uint8, key uint8, velocity uint8) {
@@ -74,56 +74,42 @@ func (i *Interface) GateKey() (gate, key modular.Reader) {
 	return g, k
 }
 
-type midiKeyReader struct {
+type midiKeyProcessor struct {
 	in  midi.In
-	key modular.V
+	key float32
 }
 
-func (r *midiKeyReader) Read(vs []modular.V) (n int, err error) {
-	for i := range vs {
-		vs[i] = r.key
+func (r *midiKeyProcessor) Process(b modular.Block) {
+	for i := range b.Buf {
+		b.Buf[i] = r.key
 	}
-	return len(vs), nil
 }
 
-func (r *midiKeyReader) Close() error {
+func (r *midiKeyProcessor) Close() error {
 	if err := r.in.StopListening(); err != nil {
 		return err
 	}
 	return r.in.Close()
 }
 
-type midiGateReader struct {
+type midiGateProcessor struct {
 	in   midi.In
-	gate modular.V
+	gate float32
 }
 
-func (r *midiGateReader) Read(vs []modular.V) (n int, err error) {
-	for i := range vs {
-		vs[i] = r.gate
+func (r *midiGateProcessor) Process(b modular.Block) {
+	for i := range b.Buf {
+		b.Buf[i] = r.gate
 	}
-	return len(vs), nil
 }
 
-func (r *midiGateReader) Close() error {
+func (r *midiGateProcessor) Close() error {
 	if err := r.in.StopListening(); err != nil {
 		return err
 	}
 	return r.in.Close()
 }
 
-func (i *Interface) Vel() modular.Reader {
+func (i *Interface) Vel() modular.Processor {
 	panic("midi.Interface.Vel: not implemented")
-}
-
-func (i *Interface) SparseKey() modular.SparseReader {
-	panic("midi.Interface.SparseKey: not implemented")
-}
-
-func (i *Interface) SparseGate() modular.SparseReader {
-	panic("midi.Interface.SparseGate: not implemented")
-}
-
-func (i *Interface) SparseVel() modular.Reader {
-	panic("midi.Interface.SparseVel: not implemented")
 }
