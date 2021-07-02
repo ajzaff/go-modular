@@ -13,27 +13,9 @@ func main() {
 
 	sine := osc.Sine(.1, osc.Range8, osc.Fine(midi.StdTuning))
 	sine.SetConfig(cfg)
-	sine.Process(modular.Block{
-		Buf: buf,
-	})
-
-	// var wg sync.WaitGroup
-
-	// for i := 0; i < 20; i++ {
-	// 	wg.Add(1)
-	// 	go func(i int) {
-	// 		for j := range buf[i*len(buf)/20 : (i+1)*len(buf)/20] {
-	// 			buf[j] = 69. / 12
-	// 		}
-	// 		sine.Process(buf[i*len(buf)/20 : (i+1)*len(buf)/20])
-	// 		wg.Done()
-	// 	}(i)
-	// }
-	// wg.Wait()
+	sine.Process(buf)
 
 	oto := otoplayer.New()
 	oto.SetConfig(cfg)
-	oto.Send(0).Process(modular.Block{
-		Buf: buf,
-	})
+	oto.Send(0).Process(buf)
 }

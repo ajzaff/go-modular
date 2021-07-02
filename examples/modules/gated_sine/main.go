@@ -10,17 +10,12 @@ import (
 func main() {
 	cfg := modular.New()
 
-	b := modular.Block{
-		Buf: make([]float32, 10*44100),
+	b := make([]float32, 10*44100)
+	for i := range b {
+		b[i] = 69. / 12
 	}
 
-	for i := range b.Buf {
-		b.Buf[i] = 69. / 12
-	}
-
-	lb := modular.Block{
-		Buf: make([]float32, 10*44100),
-	}
+	lb := make([]float32, 10*44100)
 	lfo := osc.Pulse(.1, .1, osc.Range64, 0, .5)
 	lfo.SetConfig(cfg)
 	lfo.Process(lb)
@@ -29,8 +24,8 @@ func main() {
 	wave.SetConfig(cfg)
 	wave.Process(b)
 
-	for i := range lb.Buf {
-		b.Buf[i] = lb.Buf[i] * b.Buf[i]
+	for i := range lb {
+		b[i] = lb[i] * b[i]
 	}
 
 	oto := otoplayer.New()

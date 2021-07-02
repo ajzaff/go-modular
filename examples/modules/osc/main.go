@@ -10,10 +10,9 @@ import (
 func main() {
 	cfg := modular.New()
 
-	b := modular.Block{Buf: make([]float32, 5*44100)}
-
-	for i := range b.Buf {
-		b.Buf[i] = 69. / 12
+	b := make([]float32, 5*44100)
+	for i := range b {
+		b[i] = 69. / 12
 	}
 
 	wave := osc.Sine(.1, osc.Range8, osc.Fine(midi.StdTuning))

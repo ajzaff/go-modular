@@ -54,15 +54,15 @@ type playerProcessor struct {
 }
 
 // Send outputs to the speaker using the Oto driver.
-func (d *playerProcessor) Process(b modular.Block) {
+func (d *playerProcessor) Process(b []float32) {
 	if d.ch == 1 {
 		binary.Write(d.player, binary.LittleEndian, uint16(0))
 	}
-	for _, v := range b.Buf[:len(b.Buf)-1] {
+	for _, v := range b[:len(b)-1] {
 		binary.Write(d.player, binary.LittleEndian, convert(v))
 		binary.Write(d.player, binary.LittleEndian, uint16(0))
 	}
-	binary.Write(d.player, binary.LittleEndian, convert(b.Buf[len(b.Buf)-1]))
+	binary.Write(d.player, binary.LittleEndian, convert(b[len(b)-1]))
 	if d.ch == 0 {
 		binary.Write(d.player, binary.LittleEndian, uint16(0))
 	}

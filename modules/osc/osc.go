@@ -50,7 +50,7 @@ type Osc struct {
 	mathmod.Func2
 
 	sampleRate float32
-	phase      float32
+	Phase      float32
 }
 
 func (o *Osc) SetConfig(cfg *modular.Config) error {
@@ -62,7 +62,7 @@ func (o *Osc) SetConfig(cfg *modular.Config) error {
 func Sine(a Polarity, r Range, fine float32) *Osc {
 	osc := &Osc{}
 	osc.Func2 = func(i int, x float32) float32 {
-		return float32(a) * float32(math.Sin(2*math.Pi*(float64(osc.phase)+float64(i))*float64(Tone(r, fine+x))/float64(osc.sampleRate)))
+		return float32(a) * float32(math.Sin(2*math.Pi*(float64(osc.Phase)+float64(i))*float64(Tone(r, fine+x))/float64(osc.sampleRate)))
 	}
 	return osc
 }
@@ -71,7 +71,7 @@ func Sine(a Polarity, r Range, fine float32) *Osc {
 func Triangle(a Polarity, r Range, fine float32) *Osc {
 	osc := &Osc{}
 	osc.Func2 = func(i int, x float32) float32 {
-		return float32(a) * float32(2/math.Pi*math.Asin(math.Sin(2*math.Pi*(float64(osc.phase)+float64(i))*float64(Tone(r, fine+x))/float64(osc.sampleRate))))
+		return float32(a) * float32(2/math.Pi*math.Asin(math.Sin(2*math.Pi*(float64(osc.Phase)+float64(i))*float64(Tone(r, fine+x))/float64(osc.sampleRate))))
 	}
 	return osc
 }
@@ -80,7 +80,7 @@ func Triangle(a Polarity, r Range, fine float32) *Osc {
 func Saw(a Polarity, r Range, fine float32) *Osc {
 	osc := &Osc{}
 	osc.Func2 = func(i int, x float32) float32 {
-		return float32(a) * float32(2/math.Pi*math.Atan(math.Tan(math.Pi*(float64(osc.phase)+float64(i))*float64(Tone(r, fine+x))/float64(osc.sampleRate))))
+		return float32(a) * float32(2/math.Pi*math.Atan(math.Tan(math.Pi*(float64(osc.Phase)+float64(i))*float64(Tone(r, fine+x))/float64(osc.sampleRate))))
 	}
 	return osc
 }
@@ -96,7 +96,7 @@ func Square(a Polarity, r Range, fine float32) *Osc {
 func Pulse(a Polarity, c float32, r Range, fine float32, w float32) *Osc {
 	osc := &Osc{}
 	osc.Func2 = func(i int, x float32) float32 {
-		if math.Mod((float64(osc.phase)+float64(i))*float64(Tone(r, fine+x))/float64(osc.sampleRate), 2) < 2*float64(w) {
+		if math.Mod((float64(osc.Phase)+float64(i))*float64(Tone(r, fine+x))/float64(osc.sampleRate), 2) < 2*float64(w) {
 			return float32(a) + float32(c)
 		}
 		return float32(-a) + float32(c)

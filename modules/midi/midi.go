@@ -79,9 +79,9 @@ type midiKeyProcessor struct {
 	key float32
 }
 
-func (r *midiKeyProcessor) Process(b modular.Block) {
-	for i := range b.Buf {
-		b.Buf[i] = r.key
+func (r *midiKeyProcessor) Process(b []float32) {
+	for i := range b {
+		b[i] = r.key
 	}
 }
 
@@ -97,9 +97,9 @@ type midiGateProcessor struct {
 	gate float32
 }
 
-func (r *midiGateProcessor) Process(b modular.Block) {
-	for i := range b.Buf {
-		b.Buf[i] = r.gate
+func (r *midiGateProcessor) Process(b []float32) {
+	for i := range b {
+		b[i] = r.gate
 	}
 }
 

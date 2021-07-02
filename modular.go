@@ -38,32 +38,12 @@ func New() *Config {
 	}
 }
 
-// OutputScaled is an optional interface for modules with custom output scale.
-type OutputScaled interface {
-	// OutputScaled returns the output scale for this Module.
-	//
-	// The number of times larger to scale the output.
-	OutputScaled() float32
-}
-
-// Block is a mono PCM audio sample.
-//
-// Pos is the absolute position of the sample.
-type Block struct {
-	Buf []float32
-	Pos int
-}
-
 // Processor is an interface for block processors.
 type Processor interface {
 	// Process processes the audio block in place.
 	//
-	// The optional OutputScaled interface method controls the number of
-	// extra samples in the buffer. The number of extra samples will be
-	// the larger of OutputScaled-1 and 0.
-	//
-	// The processor must not retain Buf.
-	Process(b Block)
+	// The processor must not retain b.
+	Process(b []float32)
 }
 
 // Module is an interface for configurable block processors.

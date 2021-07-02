@@ -1,19 +1,17 @@
 package mathmod
 
-import "github.com/ajzaff/go-modular"
-
 type Func func(float32) float32
 
-func (fn Func) Process(b modular.Block) {
-	for i, v := range b.Buf {
-		b.Buf[i] = fn(v)
+func (fn Func) Process(b []float32) {
+	for i, v := range b {
+		b[i] = fn(v)
 	}
 }
 
-type Func2 func(int, float32) float32
+type Func2 func(i int, v float32) float32
 
-func (fn2 Func2) Process(b modular.Block) {
-	for i, v := range b.Buf {
-		b.Buf[i] = fn2(b.Pos+i, v)
+func (fn Func2) Process(b []float32) {
+	for i, v := range b {
+		b[i] = fn(i, v)
 	}
 }
