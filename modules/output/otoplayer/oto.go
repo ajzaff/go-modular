@@ -32,6 +32,15 @@ func (d *Player) SetConfig(cfg *modular.Config) error {
 	return nil
 }
 
+func (d *Player) SendStereo() modular.Processor {
+	d.mu.Lock()
+	defer d.mu.Unlock()
+	if d.ctx == nil {
+		panic("otoplayer.SendStereo called before SetConfig")
+	}
+	return &stereoProcessor{d.ctx.NewPlayer()}
+}
+
 func (d *Player) Send(ch int) modular.Processor {
 	d.mu.Lock()
 	defer d.mu.Unlock()
@@ -69,6 +78,22 @@ func (d *playerProcessor) Process(b []float32) {
 }
 
 func (d *playerProcessor) Close() error {
+	return d.player.Close()
+}
+
+type stereoProcessor struct {
+	player *oto.Player
+}
+
+// Send outputs to the speaker using the Oto driver.
+func (d *stereoProcessor) Process(b []float32) {
+	for _, v := range b {
+		binary.Write(d.player, binary.LittleEndian, convert(v))
+		binary.Write(d.player, binary.LittleEndian, convert(v))
+	}
+}
+
+func (d *stereoProcessor) Close() error {
 	return d.player.Close()
 }
 
