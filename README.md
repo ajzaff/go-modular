@@ -1,4 +1,4 @@
-# go-modular
+# go-modular (v2)
 
 A software modular synthesizer with Midi support.
 
