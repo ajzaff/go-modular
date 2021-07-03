@@ -5,7 +5,7 @@ import (
 
 	"gitlab.com/gomidi/midi"
 	"gitlab.com/gomidi/midi/reader"
-	"gitlab.com/gomidi/portmididrv"
+	"gitlab.com/gomidi/rtmididrv"
 )
 
 func must(err error) {
@@ -15,7 +15,7 @@ func must(err error) {
 }
 
 func main() {
-	drv, err := portmididrv.New()
+	drv, err := rtmididrv.New()
 	must(err)
 
 	defer drv.Close()

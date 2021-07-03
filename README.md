@@ -14,14 +14,10 @@ go get github.com/ajzaff/go-modular
 
 ### Midi
 
-Midi drivers required ahead. This library supports portmidi at the moment. Install:
+Midi drivers required ahead.
 
-```
-apt install libportmidi-dev
-```
-
-Or similar package.
+See [rtmididrv](https://gitlab.com/gomidi/rtmididrv#installation) for installation instructions for all platforms.
 
 ## Examples
 
-See the `examples` directory for tons of demo content.
+See the `examples` directory for demo content.

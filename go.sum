@@ -1,13 +1,10 @@
 github.com/hajimehoshi/oto v0.6.1 h1:7cJz/zRQV4aJvMSSRqzN2TImoVVMpE0BCY4nrNJaDOM=
 github.com/hajimehoshi/oto v0.6.1/go.mod h1:0QXGEkbuJRohbJaxr7ZQSxnju7hEhseiPx2hrh6raOI=
-github.com/rakyll/portmidi v0.0.0-20170620004031-e434d7284291 h1:hl7rQwLldjB+FCyUuxSFCAx986GONIoRQwsMesdOknE=
-github.com/rakyll/portmidi v0.0.0-20170620004031-e434d7284291/go.mod h1:tO1ylmFo6+hnYFvj/fd92q30wkNQwgWC/8mcHq0KkQU=
-gitlab.com/gomidi/midi v1.16.4/go.mod h1:3ohtNOhqoSakkuLG/Li1OI6I3J1c2LErnJF5o/VBq1c=
+github.com/mjibson/go-dsp v0.0.0-20180508042940-11479a337f12 h1:dd7vnTDfjtwCETZDrRe+GPYNLA1jBtbZeyfyE8eZCyk=
+github.com/mjibson/go-dsp v0.0.0-20180508042940-11479a337f12/go.mod h1:i/KKcxEWEO8Yyl11DYafRPKOPVYTrhxiTRigjtEEXZU=
 gitlab.com/gomidi/midi v1.21.0/go.mod h1:3ohtNOhqoSakkuLG/Li1OI6I3J1c2LErnJF5o/VBq1c=
-gitlab.com/gomidi/midi v1.23.3 h1://gDrbjiLdDZNW6W60mloIVApZ4PgGNXiGGKgjpJg00=
-gitlab.com/gomidi/midi v1.23.3/go.mod h1:3ohtNOhqoSakkuLG/Li1OI6I3J1c2LErnJF5o/VBq1c=
-gitlab.com/gomidi/portmididrv v0.6.0 h1:uT+rl1Y+KCt3qVr4hEn3Z++qRevAN/ppDPyWA0JK/J0=
-gitlab.com/gomidi/portmididrv v0.6.0/go.mod h1:3+8aNWgHp7rq6rBEegdAXCbky/1qQ4Puloz99wjzVNw=
+gitlab.com/gomidi/midi v1.23.5 h1:5/MOi3fWEzSLNgpY5oNZqc6vsHAKEiEPFYeUCzgB1hQ=
+gitlab.com/gomidi/midi v1.23.5/go.mod h1:3ohtNOhqoSakkuLG/Li1OI6I3J1c2LErnJF5o/VBq1c=
 gitlab.com/gomidi/rtmididrv v0.11.0 h1:Bc/zr8agMU2KDcpj932Vy51K4YO5Cp6pPIY6Buf6Q6Y=
 gitlab.com/gomidi/rtmididrv v0.11.0/go.mod h1:wjwyt4rCwmvS++uk5mW5S+MnSbUnQUMNVvaEUCunjJE=
 gitlab.com/gomidi/rtmididrv/imported/rtmidi v0.0.0-20191025100939-514fe0ed97a6 h1:0XqAH/BAxH5TTBzIWkdlZqpp6VUx6DFcQnMWW6G6hIc=
