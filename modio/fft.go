@@ -56,3 +56,21 @@ func (x *FFT) UpdateAll(f func(i int, v complex128) complex128) {
 		x.buf[i] = f(i, v)
 	}
 }
+
+func CopyToReal32(dst []float32, src []complex128) {
+	if len(dst) != len(src) {
+		panic("modio.ToReal32: slices must have equal length")
+	}
+	for i := range dst {
+		dst[i] = float32(real(src[i]))
+	}
+}
+
+func CopyToComplex128(dst []complex128, src []float32) {
+	if len(dst) != len(src) {
+		panic("modio.ToComplex128: slices must have equal length")
+	}
+	for i := range dst {
+		dst[i] = complex(float64(src[i]), 0)
+	}
+}

@@ -4,18 +4,17 @@ import (
 	"math"
 
 	"github.com/ajzaff/go-modular"
+	"github.com/ajzaff/go-modular/modio"
 	"github.com/mjibson/go-dsp/fft"
 	"github.com/mjibson/go-dsp/window"
 )
 
 type LowPass struct {
-	Cutoff func(i int) float32
-
 	blockSize int
 	rate      int
 
-	buffer []complex128
 	filter []complex128
+	fft    modio.FFT
 }
 
 func (f *LowPass) SetConfig(cfg *modular.Config) {
@@ -28,36 +27,34 @@ func sincfn(x float32) float32 {
 }
 
 // Adapted from https://ccrma.stanford.edu/~jos/filters/.
-func (f *LowPass) computeFilter() {
+func (f *LowPass) UpdateFilter(cutoff func(i int) float32) {
+	filter := f.filter
 	if f.filter == nil {
-		f.filter = make([]complex128, f.blockSize)
+		filter = make([]complex128, f.blockSize)
 	}
-	for i := range f.filter {
-		c := f.Cutoff(i)
+	for i := range filter {
+		c := cutoff(i)
 		t := -(float32(f.blockSize)-1)/2 + float32(i)
 		v := (2 * c / float32(f.rate)) * sincfn(2*c*t/float32(f.rate))
-		f.filter[i] = complex(float64(v), 0)
+		filter[i] = complex(float64(v), 0)
 	}
 	for i, v := range window.Blackman(f.blockSize) {
-		f.filter[i] *= complex(v, 0)
+		filter[i] *= complex(v, 0)
 	}
+	f.filter = fft.FFT(filter)
 }
 
 func (f *LowPass) Process(b []float32) {
 	if len(b) != f.blockSize {
 		panic("filter.LowPass: Process called with wrong size block")
 	}
-	if f.buffer == nil {
-		f.buffer = make([]complex128, len(b))
+	if f.filter == nil {
+		return
 	}
-	for i, v := range b {
-		f.buffer[i] = complex(float64(v), 0)
-	}
-	f.computeFilter()
-	y := fft.Convolve(f.buffer, f.filter)
-
-	copy(f.buffer, y)
-	for i, v := range f.buffer {
-		b[i] = float32(real(v))
-	}
+	f.fft.Reset()
+	f.fft.StoreFFT(b)
+	f.fft.UpdateAll(func(i int, v complex128) complex128 {
+		return v * f.filter[i]
+	})
+	f.fft.Process(b)
 }

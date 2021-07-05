@@ -14,8 +14,6 @@ type Context struct {
 }
 
 // New creates a new Oto output context.
-//
-// New may panic if called again before the driver is Closed.
 func New() *Context {
 	return &Context{}
 }
