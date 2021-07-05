@@ -40,6 +40,11 @@ func (x *FFT) Process(b []float32) {
 	}
 }
 
+// Returns FFT(b)_i.
+func (x *FFT) Get(i int) complex128 {
+	return x.buf[i]
+}
+
 // Update FFT(b)_i = v.
 func (x *FFT) Update(i int, v complex128) {
 	x.buf[i] = v

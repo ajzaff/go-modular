@@ -15,20 +15,18 @@ func main() {
 		b[i] = 69. / 12
 	}
 
-	lb := make([]float32, 10*44100)
-	lfo := osc.Pulse(.1, .1, osc.Range64, 0, .5)
-	lfo.SetConfig(cfg)
-	lfo.Process(lb)
-
 	wave := osc.Sine(.1, osc.Range16, osc.Fine(midi.StdTuning))
 	wave.SetConfig(cfg)
 	wave.Process(b)
 
-	for i := range lb {
-		b[i] = lb[i] * b[i]
+	lfo := osc.Pulse(.1, .1, osc.Range64, 0, .5)
+	lfo.SetConfig(cfg)
+
+	for i := range b {
+		b[i] *= lfo.Func2(i, 0)
 	}
 
 	oto := otoplayer.New()
 	oto.SetConfig(cfg)
-	oto.Send(0).Process(b)
+	oto.PlayStereo(b)
 }

@@ -27,6 +27,7 @@ func sincfn(x float32) float32 {
 	return float32(math.Sin(math.Pi*float64(x)) / (math.Pi * float64(x)))
 }
 
+// Adapted from https://ccrma.stanford.edu/~jos/filters/.
 func (f *LowPass) computeFilter() {
 	if f.filter == nil {
 		f.filter = make([]complex128, f.blockSize)

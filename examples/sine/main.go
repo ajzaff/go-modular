@@ -9,13 +9,13 @@ import (
 
 func main() {
 	cfg := modular.New()
-	buf := make([]float32, 44100*5)
+	b := make([]float32, 44100*5)
 
 	sine := osc.Sine(.1, osc.Range8, osc.Fine(midi.StdTuning))
 	sine.SetConfig(cfg)
-	sine.Process(buf)
+	sine.Process(b)
 
 	oto := otoplayer.New()
 	oto.SetConfig(cfg)
-	oto.Send(0).Process(buf)
+	oto.PlayStereo(b)
 }

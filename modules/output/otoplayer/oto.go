@@ -8,19 +8,19 @@ import (
 	"github.com/hajimehoshi/oto"
 )
 
-type Player struct {
+type Context struct {
 	ctx *oto.Context
 	mu  sync.Mutex
 }
 
-// New creates a new Oto output.
+// New creates a new Oto output context.
 //
 // New may panic if called again before the driver is Closed.
-func New() *Player {
-	return &Player{}
+func New() *Context {
+	return &Context{}
 }
 
-func (d *Player) SetConfig(cfg *modular.Config) error {
+func (d *Context) SetConfig(cfg *modular.Config) error {
 	if err := d.Close(); err != nil {
 		return err
 	}
@@ -32,38 +32,55 @@ func (d *Player) SetConfig(cfg *modular.Config) error {
 	return nil
 }
 
-func (d *Player) SendStereo() modular.Processor {
+func (d *Context) NewStereoPlayer() *StereoPlayer {
 	d.mu.Lock()
 	defer d.mu.Unlock()
 	if d.ctx == nil {
 		panic("otoplayer.SendStereo called before SetConfig")
 	}
-	return &stereoProcessor{d.ctx.NewPlayer()}
+	return &StereoPlayer{d.ctx.NewPlayer()}
 }
 
-func (d *Player) Send(ch int) modular.Processor {
+func (d *Context) PlayStereo(b []float32) {
+	p := d.NewStereoPlayer()
+	defer p.Close()
+	p.Process(b)
+}
+
+func (d *Context) NewPlayer(ch int) *Player {
+	d.mu.Lock()
+	defer d.mu.Unlock()
+	if d.ctx == nil {
+		panic("otoplayer.SendStereo called before SetConfig")
+	}
+	return &Player{d.ctx.NewPlayer(), ch}
+}
+
+func (d *Context) Play(ch int, b []float32) {
 	d.mu.Lock()
 	defer d.mu.Unlock()
 	if d.ctx == nil {
 		panic("otoplayer.Send called before SetConfig")
 	}
-	return &playerProcessor{d.ctx.NewPlayer(), ch}
+	p := &Player{d.ctx.NewPlayer(), ch}
+	defer p.Close()
+	p.Process(b)
 }
 
-func (d *Player) Close() error {
+func (d *Context) Close() error {
 	if d.ctx == nil {
 		return nil
 	}
 	return d.ctx.Close()
 }
 
-type playerProcessor struct {
+type Player struct {
 	player *oto.Player
 	ch     int
 }
 
 // Send outputs to the speaker using the Oto driver.
-func (d *playerProcessor) Process(b []float32) {
+func (d *Player) Process(b []float32) {
 	if d.ch == 1 {
 		binary.Write(d.player, binary.LittleEndian, uint16(0))
 	}
@@ -77,23 +94,23 @@ func (d *playerProcessor) Process(b []float32) {
 	}
 }
 
-func (d *playerProcessor) Close() error {
+func (d *Player) Close() error {
 	return d.player.Close()
 }
 
-type stereoProcessor struct {
+type StereoPlayer struct {
 	player *oto.Player
 }
 
 // Send outputs to the speaker using the Oto driver.
-func (d *stereoProcessor) Process(b []float32) {
+func (d *StereoPlayer) Process(b []float32) {
 	for _, v := range b {
 		binary.Write(d.player, binary.LittleEndian, convert(v))
 		binary.Write(d.player, binary.LittleEndian, convert(v))
 	}
 }
 
-func (d *stereoProcessor) Close() error {
+func (d *StereoPlayer) Close() error {
 	return d.player.Close()
 }
 

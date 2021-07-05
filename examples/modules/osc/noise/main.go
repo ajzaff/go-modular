@@ -11,15 +11,11 @@ func main() {
 
 	b := make([]float32, 5*44100)
 
-	noise := osc.NoiseOsc{}
+	noise := osc.Noise(.1)
 	noise.SetConfig(cfg)
 	noise.Process(b)
 
-	for i, v := range b {
-		b[i] = .1 * v
-	}
-
 	oto := otoplayer.New()
 	oto.SetConfig(cfg)
-	oto.SendStereo().Process(b)
+	oto.PlayStereo(b)
 }

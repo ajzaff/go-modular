@@ -21,5 +21,5 @@ func main() {
 
 	oto := otoplayer.New()
 	oto.SetConfig(cfg)
-	oto.Send(0).Process(b)
+	oto.PlayStereo(b)
 }
