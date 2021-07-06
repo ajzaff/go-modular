@@ -15,10 +15,13 @@ func main() {
 
 	b := make([]float32, 5*44100)
 	for i := range b {
-		b[i] = w.Func2(i, 45./12)/3 + w.Func2(i, 64./12)/3 + w.Func2(i, 73./12)/3
+		b[i] = w.Func(45./12)/3 + w.Func(64./12)/3 + w.Func(73./12)/3
+		w.Advance(1)
 	}
 
 	oto := otoplayer.New()
+	defer oto.Close()
+
 	oto.SetConfig(cfg)
 	oto.PlayStereo(b)
 }

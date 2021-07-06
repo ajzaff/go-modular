@@ -15,15 +15,18 @@ func main() {
 		b[i] = 69. / 12
 	}
 
-	wave := osc.Sine(.1, osc.Range16, osc.Fine(midi.StdTuning))
-	wave.SetConfig(cfg)
-	wave.Process(b)
+	w := osc.Sine(.1, osc.Range16, osc.Fine(midi.StdTuning))
+	w.Voltage = func() float32 {
+		return 69. / 12
+	}
+	w.SetConfig(cfg)
+	w.Process(b)
 
-	lfo := osc.Pulse(.1, .1, osc.Range64, 0, .5)
+	lfo := osc.Pulse(.5, .5, osc.Range64, 0, .5)
 	lfo.SetConfig(cfg)
 
-	for i := range b {
-		b[i] *= lfo.Func2(i, 0)
+	for i, v := range b {
+		b[i] = v * lfo.Apply()
 	}
 
 	oto := otoplayer.New()

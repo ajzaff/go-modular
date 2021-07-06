@@ -11,13 +11,12 @@ func main() {
 	cfg := modular.New()
 
 	b := make([]float32, 5*44100)
-	for i := range b {
-		b[i] = 69. / 12
+	w := osc.Sine(.1, osc.Range8, osc.Fine(midi.StdTuning))
+	w.Voltage = func() float32 {
+		return 69. / 12
 	}
-
-	wave := osc.Sine(.1, osc.Range8, osc.Fine(midi.StdTuning))
-	wave.SetConfig(cfg)
-	wave.Process(b)
+	w.SetConfig(cfg)
+	w.Process(b)
 
 	oto := otoplayer.New()
 	oto.SetConfig(cfg)

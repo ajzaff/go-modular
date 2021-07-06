@@ -47,10 +47,55 @@ func Fine(t midi.Tuning) float32 {
 
 // Osc is a simple wave oscillator.
 type Osc struct {
-	mathmod.Func2
+	// Func is the underlying oscillator waveform.
+	//
+	// Responsible for mapping Voltage to amplitudes.
+	Func mathmod.Func
+	// Voltage closure.
+	//
+	// Using the one-volt-per-octave standard (e.g.: 0 = MIDI 0, 5.75 = A4).
+	Voltage func() float32
 
+	p          float32
 	sampleRate float32
-	Phase      float32
+}
+
+// Reset the phase.
+func (a *Osc) Reset() {
+	a.p = 0
+}
+
+const (
+	twoPi     = 2 * math.Pi
+	twoOverPi = 2 / math.Pi
+)
+
+// SetPhase sets the phase to p samples.
+func (a *Osc) SetPhase(p float32) {
+	a.p = p
+}
+
+// Advance the phase by n samples.
+func (a *Osc) Advance(n float32) {
+	a.p += n
+}
+
+// Phase returns the oscillator phase.
+func (a *Osc) Phase() float32 {
+	return a.p
+}
+
+// Apply calls the oscillator and advances the phase once.
+func (a *Osc) Apply() float32 {
+	defer a.Advance(1)
+	return a.Func(a.Voltage())
+}
+
+// Process the block b.
+func (a *Osc) Process(b []float32) {
+	for i := range b {
+		b[i] = a.Apply()
+	}
 }
 
 func (o *Osc) SetConfig(cfg *modular.Config) error {
@@ -60,27 +105,27 @@ func (o *Osc) SetConfig(cfg *modular.Config) error {
 
 // Sine outputs an sine audio wave from the linear signal and parameters.
 func Sine(a Polarity, r Range, fine float32) *Osc {
-	osc := &Osc{}
-	osc.Func2 = func(i int, x float32) float32 {
-		return float32(a) * float32(math.Sin(2*math.Pi*(float64(osc.Phase)+float64(i))*float64(Tone(r, fine+x))/float64(osc.sampleRate)))
+	osc := &Osc{Voltage: func() float32 { return 0 }}
+	osc.Func = func(x float32) float32 {
+		return float32(a) * float32(math.Sin(twoPi*float64(osc.p)*float64(Tone(r, fine+x))/float64(osc.sampleRate)))
 	}
 	return osc
 }
 
 // Triangle outputs an triangle wave from the linear signal and parameters.
 func Triangle(a Polarity, r Range, fine float32) *Osc {
-	osc := &Osc{}
-	osc.Func2 = func(i int, x float32) float32 {
-		return float32(a) * float32(2/math.Pi*math.Asin(math.Sin(2*math.Pi*(float64(osc.Phase)+float64(i))*float64(Tone(r, fine+x))/float64(osc.sampleRate))))
+	osc := &Osc{Voltage: func() float32 { return 0 }}
+	osc.Func = func(x float32) float32 {
+		return float32(a) * float32(twoOverPi*math.Asin(math.Sin(twoPi*float64(osc.p))*float64(Tone(r, fine+x))/float64(osc.sampleRate)))
 	}
 	return osc
 }
 
 // Saw outputs an sawtooth wave from the linear signal and parameters.
 func Saw(a Polarity, r Range, fine float32) *Osc {
-	osc := &Osc{}
-	osc.Func2 = func(i int, x float32) float32 {
-		return float32(a) * float32(2/math.Pi*math.Atan(math.Tan(math.Pi*(float64(osc.Phase)+float64(i))*float64(Tone(r, fine+x))/float64(osc.sampleRate))))
+	osc := &Osc{Voltage: func() float32 { return 0 }}
+	osc.Func = func(x float32) float32 {
+		return float32(a) * float32(twoOverPi*math.Atan(math.Tan(math.Pi*float64(osc.p))*float64(Tone(r, fine+x))/float64(osc.sampleRate)))
 	}
 	return osc
 }
@@ -94,12 +139,12 @@ func Square(a Polarity, r Range, fine float32) *Osc {
 //
 // Pulse width w is in the range 0 to 1.
 func Pulse(a Polarity, c float32, r Range, fine float32, w float32) *Osc {
-	osc := &Osc{}
-	osc.Func2 = func(i int, x float32) float32 {
-		if math.Mod((float64(osc.Phase)+float64(i))*float64(Tone(r, fine+x))/float64(osc.sampleRate), 2) < 2*float64(w) {
-			return float32(a) + float32(c)
+	osc := &Osc{Voltage: func() float32 { return 0 }}
+	osc.Func = func(x float32) float32 {
+		if math.Mod(float64(osc.p)*float64(Tone(r, fine+x))/float64(osc.sampleRate), 2) < 2*float64(w) {
+			return float32(a) + c
 		}
-		return float32(-a) + float32(c)
+		return float32(-a) + c
 	}
 	return osc
 }
