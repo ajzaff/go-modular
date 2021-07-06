@@ -27,6 +27,7 @@ type ADSR struct {
 		set bool
 		pos int
 	}
+	gate func() bool
 
 	sampleRate int
 }
@@ -62,12 +63,13 @@ func (a *ADSR) samples(d time.Duration) int {
 	return int(math.Round(float64(a.sampleRate) * float64(d.Seconds())))
 }
 
-// Reset resets the ADSR to the attack phase.
+// Reset manually resets the ADSR to the attack phase.
+//
+// Use SetGate to automate the reset.
 func (a *ADSR) Reset() {
 	a.phase = attack
 	a.begin = 0
 	a.p = 0
-	a.ResetSustain()
 	a.end = a.samples(a.a)
 }
 
@@ -89,7 +91,20 @@ func (a *ADSR) SetSustain(d time.Duration) {
 	}{true, a.samples(a.a + a.d + d)}
 }
 
-// Release releases the note now if held.
+// ResetGate unsets the automatic gate trigger.
+func (a *ADSR) ResetGate() {
+	a.gate = nil
+}
+
+// SetGate sets the automatic gate trigger.
+//
+// 	gate will be called once per sample.
+// 	`gate() == true` resets the ADSR.
+func (a *ADSR) SetGate(gate func() bool) {
+	a.gate = gate
+}
+
+// Release releases the note now.
 func (a *ADSR) Release() {
 	if a.phase == sustain {
 		a.releaseNow()
@@ -148,6 +163,9 @@ func (a *ADSR) Envelope() float32 {
 // Process convolves the block with the ADSR envelope.
 func (a *ADSR) Process(b []float32) {
 	for i, v := range b {
+		if a.gate != nil && a.gate() {
+			a.Reset()
+		}
 		b[i] = v * a.Envelope()
 	}
 }
