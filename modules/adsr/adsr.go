@@ -8,12 +8,6 @@ import (
 )
 
 // ADSR is a basic ADSR envelope generator.
-//
-// Gate transitions shape the generated envelope:
-//	0->1: Attack trigger.
-//	1->1: Decay/Sustain.
-//	1->0: Release trigger.
-//	0->0: Off.
 type ADSR struct {
 	a, d time.Duration
 	s    float32
