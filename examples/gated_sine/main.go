@@ -26,7 +26,7 @@ func main() {
 	lfo.SetConfig(cfg)
 
 	for i, v := range b {
-		b[i] = v * lfo.Apply()
+		b[i] = v * lfo.Next()
 	}
 
 	oto := otoplayer.New()

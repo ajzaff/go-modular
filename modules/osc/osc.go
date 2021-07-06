@@ -85,8 +85,8 @@ func (a *Osc) Phase() float32 {
 	return a.p
 }
 
-// Apply calls the oscillator and advances the phase once.
-func (a *Osc) Apply() float32 {
+// Next calls the oscillator and advances the phase once.
+func (a *Osc) Next() float32 {
 	defer a.Advance(1)
 	return a.Func(a.Voltage())
 }
@@ -94,7 +94,7 @@ func (a *Osc) Apply() float32 {
 // Process the block b.
 func (a *Osc) Process(b []float32) {
 	for i := range b {
-		b[i] = a.Apply()
+		b[i] = a.Next()
 	}
 }
 
