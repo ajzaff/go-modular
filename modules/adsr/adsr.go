@@ -23,7 +23,10 @@ type ADSR struct {
 	begin   int
 	p       int
 	end     int
-	sustain int
+	sustain struct {
+		set bool
+		pos int
+	}
 
 	sampleRate int
 }
@@ -64,14 +67,26 @@ func (a *ADSR) Reset() {
 	a.phase = attack
 	a.begin = 0
 	a.p = 0
+	a.ResetSustain()
 	a.end = a.samples(a.a)
+}
+
+// ResetSustain clears the fixed sustain duration.
+func (a *ADSR) ResetSustain() {
+	a.sustain = struct {
+		set bool
+		pos int
+	}{}
 }
 
 // SetSustain optionally sets a fixed duration for the sustain phase.
 //
 // The duration d should not include attack and decay.
 func (a *ADSR) SetSustain(d time.Duration) {
-	a.sustain = a.samples(a.a + a.d + d)
+	a.sustain = struct {
+		set bool
+		pos int
+	}{true, a.samples(a.a + a.d + d)}
 }
 
 // Release releases the note now if held.
@@ -112,7 +127,7 @@ func (a *ADSR) Envelope() float32 {
 		defer func() { a.p++ }()
 		return 1 - a.s*float32(a.p-a.begin)/float32(a.end-a.begin)
 	case sustain:
-		if a.sustain != 0 && a.p >= a.sustain {
+		if a.sustain.set && a.p >= a.sustain.pos {
 			a.releaseNow()
 			return a.s
 		}
