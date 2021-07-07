@@ -11,10 +11,6 @@ func main() {
 	cfg := modular.New()
 
 	b := make([]float32, 10*44100)
-	for i := range b {
-		b[i] = 69. / 12
-	}
-
 	w := osc.Sine(.1, osc.Range16, osc.Fine(midi.StdTuning))
 	w.Voltage = func() float32 {
 		return 69. / 12

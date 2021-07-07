@@ -13,10 +13,6 @@ func main() {
 	cfg := modular.New()
 
 	b := make([]float32, 5*44100)
-	for i := range b {
-		b[i] = 69. / 12
-	}
-
 	noise := osc.Noise(.1)
 	noise.SetConfig(cfg)
 	noise.Process(b)
@@ -30,13 +26,16 @@ func main() {
 	for i := 0; i+blockSize <= len(b); i += blockSize {
 		block := b[i : i+blockSize]
 
+		h := make([]float32, blockSize)
+		for i := blockSize / 2; i < blockSize; i++ {
+			h[i] = 1
+		}
+		hc := fft.Compute(h)
+
 		fft.Reset()
 		fft.StoreFFT(block)
 		fft.UpdateAll(func(i int, v complex128) complex128 {
-			if i >= 100 && i <= 500 {
-				return v
-			}
-			return 0
+			return v * hc[i]
 		})
 		fft.Process(block)
 	}

@@ -21,16 +21,21 @@ func (x *FFT) SetConfig(cfg *modular.Config) {
 	x.sampleRate = cfg.SampleRate
 }
 
+// Compute FFT(b).
+func (x *FFT) Compute(b []float32) []complex128 {
+	p := make([]complex128, len(b))
+	for i, v := range b {
+		p[i] = complex(float64(v), 0)
+	}
+	return fft.FFT(p)
+}
+
 // Store FFT(b).
 func (x *FFT) StoreFFT(b []float32) {
 	if x.buf != nil {
 		return
 	}
-	p := make([]complex128, len(b))
-	for i, v := range b {
-		p[i] = complex(float64(v), 0)
-	}
-	x.buf = fft.FFT(p)
+	x.buf = x.Compute(b)
 }
 
 // Receive IFFT(x.buf) into b.

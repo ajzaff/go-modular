@@ -26,14 +26,14 @@ func sincfn(x float32) float32 {
 	return float32(math.Sin(math.Pi*float64(x)) / (math.Pi * float64(x)))
 }
 
-// Adapted from https://ccrma.stanford.edu/~jos/filters/.
-func (f *LowPass) UpdateFilter(cutoff func(i int) float32) {
+// Adapted from https://ccrma.stanford.edu/~jos/sasp/Example_1_Low_Pass_Filtering.html.
+func (f *LowPass) UpdateFilter(cutoff func() float32) {
 	filter := f.filter
 	if f.filter == nil {
 		filter = make([]complex128, f.blockSize)
 	}
 	for i := range filter {
-		c := cutoff(i)
+		c := cutoff()
 		t := -(float32(f.blockSize)-1)/2 + float32(i)
 		v := (2 * c / float32(f.rate)) * sincfn(2*c*t/float32(f.rate))
 		filter[i] = complex(float64(v), 0)

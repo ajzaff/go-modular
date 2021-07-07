@@ -21,7 +21,7 @@ func main() {
 	cfg.BufferSize = blockSize
 	f := filter.LowPass{}
 	f.SetConfig(cfg)
-	f.UpdateFilter(func(int) float32 { return 440 })
+	f.UpdateFilter(func() float32 { return 440 })
 	for i := 0; i+blockSize <= len(b); i += blockSize {
 		f.Process(b[i : i+blockSize])
 	}
