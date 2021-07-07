@@ -13,6 +13,8 @@ type LowPass struct {
 	blockSize int
 	rate      int
 
+	cutoff func() float32
+
 	filter []complex128
 	fft    modio.FFT
 }
@@ -26,14 +28,19 @@ func sincfn(x float32) float32 {
 	return float32(math.Sin(math.Pi*float64(x)) / (math.Pi * float64(x)))
 }
 
+// SetCutoff sets the cutoff closure used in
+func (f *LowPass) SetCutoff(cutoff func() float32) {
+	f.cutoff = cutoff
+}
+
 // Adapted from https://ccrma.stanford.edu/~jos/sasp/Example_1_Low_Pass_Filtering.html.
-func (f *LowPass) UpdateFilter(cutoff func() float32) {
+func (f *LowPass) computeFilter() {
 	filter := f.filter
 	if f.filter == nil {
 		filter = make([]complex128, f.blockSize)
 	}
 	for i := range filter {
-		c := cutoff()
+		c := f.cutoff()
 		t := -(float32(f.blockSize)-1)/2 + float32(i)
 		v := (2 * c / float32(f.rate)) * sincfn(2*c*t/float32(f.rate))
 		filter[i] = complex(float64(v), 0)
@@ -48,9 +55,7 @@ func (f *LowPass) Process(b []float32) {
 	if len(b) != f.blockSize {
 		panic("filter.LowPass: Process called with wrong size block")
 	}
-	if f.filter == nil {
-		return
-	}
+	f.computeFilter()
 	f.fft.Reset()
 	f.fft.StoreFFT(b)
 	f.fft.UpdateAll(func(i int, v complex128) complex128 {
